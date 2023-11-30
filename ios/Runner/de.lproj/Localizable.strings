@@ -1,0 +1,13 @@
+/* 
+  Localizable.strings
+  Runner
+
+  Created on 22.02.22.
+  
+*/
+"notificationTitleNewTour" = "Tour gebucht";
+"notificationMessageNewTour" = "Eine neue Fahrt am %@ wurde gebucht.";
+"notificationTitleTourReminder" = "Erinnerung an nächste Tour";
+"notificationMessageTourReminder" = "Die nächste Fahrt von %@ startet um %@";
+"notificationTitleOpenTourReminder" = "Erinnerung an offene Tour";
+"notificationMessageOpenTourReminder" = "Die Fahrt am %@ ist noch offen.";

@@ -1,0 +1,13 @@
+/* 
+  Localizable.strings
+  Runner
+
+  Created on 22.02.22.
+  
+*/
+"notificationTitleNewTour" = "New tour booked";
+"notificationMessageNewTour" = "A new tour from %@ was booked.";
+"notificationTitleTourReminder" = "Next tour reminder";
+"notificationMessageTourReminder" = "The tour from %@ starts at %@";
+"notificationTitleOpenTourReminder" = "Open tour reminder";
+"notificationMessageOpenTourReminder" = "The tour from %@ is still open.";

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="notification_title_new_tour">Neue Fahrt gebucht</string>
+    <string name="notification_message_new_tour">Es wurde eine neue Tour am %1$s gebucht.</string>
+    <string name="notification_title_tour_reminder">Erinnerung an nächste Tour</string>
+    <string name="notification_message_tour_reminder">Die nächste Fahrt von %1$s startet um %2$s</string>
+    <string name="notification_title_open_tour_reminder">Erinnerung an offene Tour</string>
+    <string name="notification_message_open_tour_reminder">Die Fahrt am %1$s ist noch offen.</string>
+</resources>

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="notification_title_new_tour">New tour booked</string>
+    <string name="notification_message_new_tour">A new tour from %1$s was booked.</string>
+    <string name="notification_title_tour_reminder">Next tour reminder</string>
+    <string name="notification_message_tour_reminder">The tour from %1$s starts at %2$s</string>
+    <string name="notification_title_open_tour_reminder">Open tour reminder</string>
+    <string name="notification_message_open_tour_reminder">The tour from %1$s is still open.</string>
+</resources>
