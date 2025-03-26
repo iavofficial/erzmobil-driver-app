@@ -7,6 +7,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:overlay_support/overlay_support.dart';
+import 'package:internet_connection_checker/internet_connection_checker.dart';
 
 import '../Constants.dart';
 
@@ -59,8 +60,16 @@ class PushNotificationService {
               'FlutterFire Messaging: Got APNs token: $apnsToken');
         }
 
-        fcmToken = await FirebaseMessaging.instance.getToken();
-        Logger.releaseLog("FirebaseMessaging token: $fcmToken");
+        try {
+          fcmToken = await FirebaseMessaging.instance.getToken();
+          Logger.info("FirebaseMessaging token: $fcmToken");
+        } catch (e) {
+          final bool isConnected =
+              await InternetConnectionChecker.instance.hasConnection;
+          if (!isConnected) {
+            Logger.info("ERROR_FAILED_NO_INTERNET");
+          }
+        }
       }
     }
   }

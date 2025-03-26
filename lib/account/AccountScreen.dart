@@ -37,7 +37,7 @@ class _AccountScreenState extends State<AccountScreen> {
                 margin: EdgeInsets.only(left: 25, right: 25),
                 child: Text(
                   AppLocalizations.of(context)!.loggedInAsLabel,
-                  style: CustomTextStyles.bodyGrey,
+                  style: CustomTextStyles.themeStyleWhiteForDarkOrGrey(context),
                 ),
               ),
               Flexible(
@@ -46,7 +46,8 @@ class _AccountScreenState extends State<AccountScreen> {
                   margin: EdgeInsets.only(left: 25, right: 25),
                   child: Text(
                     User().email!,
-                    style: CustomTextStyles.bodyGrey,
+                    style:
+                        CustomTextStyles.themeStyleWhiteForDarkOrGrey(context),
                     maxLines: 2,
                     softWrap: true,
                     overflow: TextOverflow.ellipsis,
@@ -55,12 +56,15 @@ class _AccountScreenState extends State<AccountScreen> {
               ),
               Container(
                 margin: EdgeInsets.fromLTRB(25.0, 30.0, 25.0, 15.0),
-                child: FlatButton(
-                  padding: EdgeInsets.fromLTRB(0.0, 15.0, 0.0, 15.0),
-                  color: CustomColors.marine,
-                  disabledColor: CustomColors.lightGrey,
-                  shape: new RoundedRectangleBorder(
-                    borderRadius: new BorderRadius.circular(10.0),
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    padding: EdgeInsets.fromLTRB(0.0, 15.0, 0.0, 15.0),
+                    backgroundColor:
+                        CustomColors.themeStyleMintForDarkOrMarine(context),
+                    foregroundColor: CustomColors.lightGrey,
+                    shape: new RoundedRectangleBorder(
+                      borderRadius: new BorderRadius.circular(10.0),
+                    ),
                   ),
                   child: User().isProgressLogout
                       ? new CircularProgressIndicator()
@@ -82,7 +86,7 @@ class _AccountScreenState extends State<AccountScreen> {
             child: RichText(
               textAlign: TextAlign.left,
               text: TextSpan(
-                style: CustomTextStyles.bodyGrey,
+                style: CustomTextStyles.themeStyleWhiteForDarkOrGrey(context),
                 children: <TextSpan>[
                   TextSpan(
                       text: AppLocalizations.of(context)!.deleteAccountText1),
@@ -173,7 +177,7 @@ class _AccountScreenState extends State<AccountScreen> {
             ),
           ),
           actions: <Widget>[
-            FlatButton(
+            TextButton(
               child: Text(
                 AppLocalizations.of(context)!.buttonConfirmDelete,
                 style: CustomTextStyles.bodyAzure,
@@ -183,7 +187,7 @@ class _AccountScreenState extends State<AccountScreen> {
                 Navigator.of(context).pop();
               },
             ),
-            FlatButton(
+            TextButton(
               child: Text(
                 AppLocalizations.of(context)!.cancel,
                 style: CustomTextStyles.bodyAzure,
@@ -217,7 +221,7 @@ class _AccountScreenState extends State<AccountScreen> {
             ),
           ),
           actions: <Widget>[
-            FlatButton(
+            TextButton(
               child: Text(
                 'OK',
                 style: CustomTextStyles.bodyAzure,
@@ -234,12 +238,15 @@ class _AccountScreenState extends State<AccountScreen> {
 
   Widget _buildButton(String text, Widget screen) => Container(
         margin: EdgeInsets.fromLTRB(25.0, 15.0, 25.0, 15.0),
-        child: FlatButton(
-          padding: EdgeInsets.fromLTRB(0.0, 15.0, 0.0, 15.0),
-          color: CustomColors.marine,
-          disabledColor: CustomColors.lightGrey,
-          shape: new RoundedRectangleBorder(
-            borderRadius: new BorderRadius.circular(10.0),
+        child: TextButton(
+          style: TextButton.styleFrom(
+            padding: EdgeInsets.fromLTRB(0.0, 15.0, 0.0, 15.0),
+            backgroundColor:
+                CustomColors.themeStyleMintForDarkOrMarine(context),
+            disabledBackgroundColor: CustomColors.lightGrey,
+            shape: new RoundedRectangleBorder(
+              borderRadius: new BorderRadius.circular(10.0),
+            ),
           ),
           child: Text(
             text,

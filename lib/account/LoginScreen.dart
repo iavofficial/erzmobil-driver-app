@@ -18,6 +18,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _passwordFormKey = GlobalKey<FormState>();
 
   String? _tmpPwd;
+  bool obscurePwd = true;
 
   void _submit(BuildContext context) async {
     //check system state
@@ -83,7 +84,7 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
           ),
           actions: <Widget>[
-            FlatButton(
+            TextButton(
               child: Text(
                 isConfirmNecessary
                     ? AppLocalizations.of(context)!.buttonSend
@@ -124,6 +125,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   colors: <Color>[CustomColors.mint, CustomColors.marine])),
         ),
         automaticallyImplyLeading: !User().isProcessing,
+        foregroundColor: CustomColors.white,
         centerTitle: true,
         title: Text(AppLocalizations.of(context)!.signin),
         iconTheme:
@@ -148,7 +150,7 @@ class _LoginScreenState extends State<LoginScreen> {
               alignment: Alignment.topCenter,
               child: Icon(
                 Icons.account_circle,
-                color: CustomColors.marine,
+                color: CustomColors.themeStyleWhiteForDarkOrMarine(context),
                 size: 100,
               ),
             ),
@@ -161,7 +163,8 @@ class _LoginScreenState extends State<LoginScreen> {
                     margin: EdgeInsets.fromLTRB(30.0, 20.0, 30.0, 10.0),
                     child: TextFormField(
                       keyboardType: TextInputType.emailAddress,
-                      style: CustomTextStyles.bodyGrey,
+                      style: CustomTextStyles.themeStyleWhiteForDarkOrGrey(
+                          context),
                       autocorrect: false,
                       enabled: !User().isProcessing,
                       decoration: new InputDecoration(
@@ -194,11 +197,27 @@ class _LoginScreenState extends State<LoginScreen> {
                   Container(
                     margin: EdgeInsets.fromLTRB(30.0, 10.0, 30.0, 20.0),
                     child: TextFormField(
-                      obscureText: true,
-                      style: CustomTextStyles.bodyGrey,
+                      obscureText: obscurePwd,
+                      style: CustomTextStyles.themeStyleWhiteForDarkOrGrey(
+                          context),
                       autocorrect: false,
                       enabled: !User().isProcessing,
                       decoration: new InputDecoration(
+                          suffixIcon: IconButton(
+                              icon: Icon(
+                                obscurePwd
+                                    ? Icons.visibility
+                                    : Icons.visibility_off,
+                                color:
+                                    CustomColors.themeStyleWhiteForDarkOrBlack(
+                                        context),
+                                size: 18,
+                              ),
+                              onPressed: () {
+                                setState(() {
+                                  obscurePwd = !obscurePwd;
+                                });
+                              }),
                           labelText:
                               AppLocalizations.of(context)!.placeholderPassword,
                           labelStyle: CustomTextStyles.bodyLightGrey,
@@ -220,13 +239,15 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
             Container(
               margin: EdgeInsets.fromLTRB(30.0, 15.0, 30.0, 10.0),
-              child: FlatButton(
-                padding: EdgeInsets.fromLTRB(0.0, 15.0, 0.0, 15.0),
-                color: CustomColors.marine,
-                disabledColor: CustomColors.lightGrey,
-                shape: new RoundedRectangleBorder(
-                  borderRadius: new BorderRadius.circular(10.0),
-                ),
+              child: TextButton(
+                style: TextButton.styleFrom(
+                    padding: EdgeInsets.fromLTRB(0.0, 15.0, 0.0, 15.0),
+                    backgroundColor:
+                        CustomColors.themeStyleMintForDarkOrMarine(context),
+                    disabledBackgroundColor: CustomColors.lightGrey,
+                    shape: new RoundedRectangleBorder(
+                      borderRadius: new BorderRadius.circular(10.0),
+                    )),
                 child: User().isProgressLogin || User().isProgressConfirm
                     ? new CircularProgressIndicator()
                     : Text(
@@ -247,13 +268,8 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
             Container(
               margin: EdgeInsets.fromLTRB(30.0, 10.0, 30.0, 15.0),
-              child: FlatButton(
-                padding: EdgeInsets.fromLTRB(0.0, 15.0, 0.0, 15.0),
-                color: CustomColors.marine,
-                disabledColor: CustomColors.lightGrey,
-                shape: new RoundedRectangleBorder(
-                  borderRadius: new BorderRadius.circular(10.0),
-                ),
+              child: TextButton(
+                style: CustomButtonStyles.themeButtonyStyle(context),
                 child: Text(
                   AppLocalizations.of(context)!.forgotPassword,
                   style: CustomTextStyles.bodyWhite,
@@ -289,13 +305,8 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
           Container(
             margin: EdgeInsets.fromLTRB(30.0, 15.0, 30.0, 15.0),
-            child: FlatButton(
-              padding: EdgeInsets.fromLTRB(0.0, 15.0, 0.0, 15.0),
-              color: CustomColors.marine,
-              disabledColor: CustomColors.lightGrey,
-              shape: new RoundedRectangleBorder(
-                borderRadius: new BorderRadius.circular(10.0),
-              ),
+            child: TextButton(
+              style: CustomButtonStyles.themeButtonyStyle(context),
               child: Text(
                 AppLocalizations.of(context)!.enterRegistrationCode,
                 style: CustomTextStyles.bodyWhite,

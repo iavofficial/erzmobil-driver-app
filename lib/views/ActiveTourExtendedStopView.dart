@@ -20,7 +20,8 @@ class ActiveTourExtendedStopView extends StatefulWidget {
       required this.isStart,
       this.isDisabled = false,
       required this.isDestination,
-      required this.showBottomIcon})
+      required this.showBottomIcon,
+      required this.phoneNumberList})
       : super(key: key);
 
   final TourNode currentNode;
@@ -30,6 +31,7 @@ class ActiveTourExtendedStopView extends StatefulWidget {
   final bool showBottomIcon;
   final bool isHistoryItem;
   final int routeID;
+  final PhoneNumberList phoneNumberList;
 
   @override
   ActiveTourExtendedStopState createState() => ActiveTourExtendedStopState();
@@ -38,7 +40,6 @@ class ActiveTourExtendedStopView extends StatefulWidget {
 class ActiveTourExtendedStopState extends State<ActiveTourExtendedStopView> {
   Map<int, int>? customerStatusList;
   bool customerStatusListLoaded = false;
-  PhoneNumberList phoneNumberList = PhoneNumberList(null);
 
   @override
   void initState() {
@@ -46,16 +47,6 @@ class ActiveTourExtendedStopState extends State<ActiveTourExtendedStopView> {
     super.initState();
     Future.delayed(const Duration(milliseconds: 0), () {
       loadOrderStatus();
-      loadPhoneNumbers();
-    });
-  }
-
-  void loadPhoneNumbers() async {
-    PhoneNumberList phoneNumbers =
-        await User().loadPhoneNumbers(widget.routeID);
-
-    setState(() {
-      this.phoneNumberList = phoneNumbers;
     });
   }
 
@@ -89,9 +80,15 @@ class ActiveTourExtendedStopState extends State<ActiveTourExtendedStopView> {
       child: Consumer<User>(
           builder: (context, user, child) => (widget.isDisabled
               ? Container(
-                  decoration: BoxDecoration(color: CustomColors.lightGrey),
+                  decoration: BoxDecoration(
+                      color: CustomColors.themeStyleBlackForDarkOrLightGrey(
+                          context)),
                   child: _buildWidgets(context))
-              : _buildWidgets(context))),
+              : Container(
+                  decoration: BoxDecoration(
+                      color: CustomColors.themeStyleDarkGreyForDarkOrWhite(
+                          context)),
+                  child: _buildWidgets(context)))),
       onWillPop: () async {
         return !User().isProgressOrderStatus;
       },
@@ -99,6 +96,11 @@ class ActiveTourExtendedStopState extends State<ActiveTourExtendedStopView> {
   }
 
   Widget _buildWidgets(BuildContext context) {
+    TextStyle textStyle =
+        CustomTextStyles.themeStyleWhiteForDarkOrBlack(context);
+    TextStyle textStyleBold =
+        CustomTextStyles.themeStyleBoldWhiteForDarkOrBlack(context);
+
     return Container(
       margin: EdgeInsets.fromLTRB(10, 10, 10, 10),
       child: Column(
@@ -106,26 +108,27 @@ class ActiveTourExtendedStopState extends State<ActiveTourExtendedStopView> {
         children: [
           _buildRow(
               context, getIcon(), widget.currentNode.label, null, () => null,
-              textStyle: CustomTextStyles.bodyBlackBold),
+              textStyle: textStyleBold),
           _buildRow(
               context,
               Text(""),
               AppLocalizations.of(context)!.numberSeatsWheelchair,
               getHopOnsOffsWheelchairText(),
               () => null,
-              textStyle: CustomTextStyles.bodyBlack),
+              textStyle: textStyle),
           _buildRow(
               context,
               Text(""),
               AppLocalizations.of(context)!.numberSeats,
               getHopOnsOffsText(),
               () => null,
-              textStyle: CustomTextStyles.bodyBlack),
+              textStyle: textStyle),
           Offstage(
             offstage: getHopOnSeats() == 0,
             child: const Divider(
               height: 5,
               thickness: 1,
+              color: CustomColors.anthracite,
             ),
           ),
           _getCustomerInformation(),
@@ -135,7 +138,7 @@ class ActiveTourExtendedStopState extends State<ActiveTourExtendedStopView> {
               AppLocalizations.of(context)!.dateTimeStartViewLabel,
               getStartTime(),
               () => null,
-              textStyle: CustomTextStyles.bodyBlack),
+              textStyle: textStyle),
         ],
       ),
     );
@@ -150,7 +153,7 @@ class ActiveTourExtendedStopState extends State<ActiveTourExtendedStopView> {
         itemBuilder: (_, index) => OrderIdCheckListItem(
             showDivider: true,
             centerItems: false,
-            useWhiteTextStyle: false,
+            useWhiteTextStyle: Theme.of(context).brightness == Brightness.dark,
             orderId: widget.currentNode.hopOns[index].orderId,
             number: getPhoneNumberForBookingCode(
                 widget.currentNode.hopOns[index].orderId),
@@ -242,6 +245,9 @@ class ActiveTourExtendedStopState extends State<ActiveTourExtendedStopView> {
   Widget _buildRow(BuildContext context, Widget iconPlaceholder, String title,
       String? information, Function()? onPressed,
       {TextStyle textStyle = CustomTextStyles.bodyBlackBold}) {
+    TextStyle textStyleBody =
+        CustomTextStyles.themeStyleWhiteForDarkOrBlack(context);
+
     return Flexible(
       child: Container(
         margin: EdgeInsets.fromLTRB(0, 5, 0, 0),
@@ -273,7 +279,7 @@ class ActiveTourExtendedStopState extends State<ActiveTourExtendedStopView> {
                         alignment: Alignment.topRight,
                         child: Text(
                           information,
-                          style: CustomTextStyles.bodyBlack,
+                          style: textStyleBody,
                           maxLines: 2,
                           softWrap: true,
                           overflow: TextOverflow.ellipsis,
@@ -312,8 +318,8 @@ class ActiveTourExtendedStopState extends State<ActiveTourExtendedStopView> {
   String? getPhoneNumberForBookingCode(int orderId) {
     String phoneNumber = "";
 
-    if (phoneNumberList.data != null) {
-      List phoneNumbers = phoneNumberList.data;
+    if (widget.phoneNumberList.data != null) {
+      List phoneNumbers = widget.phoneNumberList.data;
       phoneNumbers.forEach((number) {
         if (number.userId == orderId) {
           phoneNumber = number.number;

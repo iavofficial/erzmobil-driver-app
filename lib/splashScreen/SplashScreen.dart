@@ -1,10 +1,12 @@
 import 'dart:async';
 
+import 'package:erzmobil_driver/utils/ThemeManager.dart';
 import 'package:flutter/material.dart';
 import 'package:erzmobil_driver/Constants.dart';
 import 'package:erzmobil_driver/home/HomeScreen.dart';
 import 'package:erzmobil_driver/model/PreferenceHolder.dart';
 import 'package:erzmobil_driver/model/User.dart';
+import 'package:erzmobil_driver/model/TabControllerModel.dart';
 import 'package:provider/provider.dart';
 import 'package:erzmobil_driver/push/PushNotificationService.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -42,7 +44,6 @@ class _SplashScreenState extends State<SplashScreen> {
   void _loadStorage() async {
     await PreferenceHolder().init();
     await PushNotificationService().initializeFirebase();
-    await User().checkBackendConnection();
     await User().loadCognitoData();
     await User().loadUser();
     await User().restoreSessionFromStore();
@@ -51,10 +52,10 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   void _pushMeasuredRoute() {
-    Widget widgetToPush = new ChangeNotifierProvider(
-      create: (context) => User(),
-      child: HomeScreen(),
-    );
+    Widget widgetToPush = new MultiProvider(providers: [
+      ChangeNotifierProvider(create: (context) => User()),
+      ChangeNotifierProvider(create: (context) => TabControllerModel())
+    ], child: HomeScreen());
 
     Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (BuildContext context) => widgetToPush));

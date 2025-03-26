@@ -101,6 +101,7 @@ class _UserMapState extends State<UserMap> {
         ),
         automaticallyImplyLeading: true,
         centerTitle: true,
+        foregroundColor: CustomColors.white,
         title: Text(AppLocalizations.of(context)!.tourOverview),
       ),
       body: WillPopScope(
@@ -132,26 +133,27 @@ class _UserMapState extends State<UserMap> {
       child: Stack(
         children: [
           FlutterMap(
-              options: MapOptions(
-                  center: LatLng(50.631811, 12.810148),
-                  interactiveFlags:
-                      InteractiveFlag.pinchZoom | InteractiveFlag.drag,
-                  zoom: 13.0,
-                  maxZoom: 18.0),
-              layers: [
-                TileLayerOptions(
-                  urlTemplate: 'http://188.34.157.100/tile/{z}/{x}/{y}.png',
-                  // For example purposes. It is recommended to use
-                  // TileProvider with a caching and retry strategy, like
-                  // NetworkTileProvider or CachedNetworkTileProvider
-                  tileProvider: NonCachingNetworkTileProvider(),
-                ),
-                MarkerLayerOptions(markers: markers!),
-              ]),
+            options: MapOptions(
+                center: LatLng(50.631811, 12.810148),
+                interactiveFlags:
+                    InteractiveFlag.pinchZoom | InteractiveFlag.drag,
+                zoom: 13.0,
+                maxZoom: 18.0),
+            children: [
+              TileLayer(
+                urlTemplate: 'https://karte.erzmobil.de/tile/{z}/{x}/{y}.png',
+              ),
+              MarkerLayer(
+                markers: markers!,
+              )
+            ],
+          ),
           Align(
             alignment: Alignment.bottomRight,
-            child: FlatButton(
-              padding: EdgeInsets.fromLTRB(0.0, 15.0, 5.0, 0.0),
+            child: TextButton(
+              style: TextButton.styleFrom(
+                padding: EdgeInsets.fromLTRB(0.0, 15.0, 5.0, 0.0),
+              ),
               child: Text(
                 osmUrl,
                 style: CustomTextStyles.bodyBlackBoldSmall,
@@ -167,8 +169,8 @@ class _UserMapState extends State<UserMap> {
   }
 
   _launchLicenceInfo() async {
-    if (await canLaunch(osmUrl)) {
-      await launch(osmUrl);
+    if (await canLaunchUrl(Uri.dataFromString(osmUrl))) {
+      await launchUrl(Uri.dataFromString(osmUrl));
     } else {
       throw 'Could not launch $osmUrl';
     }

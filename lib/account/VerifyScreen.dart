@@ -57,6 +57,7 @@ class _VerifyScreenState extends State<VerifyScreen> {
         automaticallyImplyLeading: !User().isProcessing,
         centerTitle: true,
         title: Text(AppLocalizations.of(context)!.forgotPassword),
+        foregroundColor: CustomColors.white,
         iconTheme:
             IconThemeData(color: CustomColors.azure, opacity: 1.0, size: 40.0),
         leading: IconButton(
@@ -199,13 +200,8 @@ class _VerifyScreenState extends State<VerifyScreen> {
             ),
             Container(
               margin: EdgeInsets.fromLTRB(30.0, 15.0, 30.0, 15.0),
-              child: FlatButton(
-                padding: EdgeInsets.fromLTRB(0.0, 15.0, 0.0, 15.0),
-                color: CustomColors.marine,
-                disabledColor: CustomColors.lightGrey,
-                shape: new RoundedRectangleBorder(
-                  borderRadius: new BorderRadius.circular(10.0),
-                ),
+              child: TextButton(
+                style: CustomButtonStyles.flatButtonStyle,
                 child: User().isProgressReset
                     ? new CircularProgressIndicator()
                     : Text(
@@ -278,7 +274,7 @@ class _VerifyScreenState extends State<VerifyScreen> {
             ),
           ),
           actions: <Widget>[
-            FlatButton(
+            TextButton(
               child: Text(
                 'OK',
                 style: CustomTextStyles.bodyAzure,

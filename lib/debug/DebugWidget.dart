@@ -5,6 +5,10 @@ import 'package:erzmobil_driver/model/User.dart';
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:erzmobil_driver/utils/StoreManager.dart';
+import 'package:erzmobil_driver/utils/Utils.dart';
+import 'package:tuple/tuple.dart';
 
 class DebugScreen extends StatefulWidget {
   @override
@@ -12,6 +16,8 @@ class DebugScreen extends StatefulWidget {
 }
 
 class _DebugScreenState extends State<DebugScreen> {
+  bool _status = false;
+  String? _logFiles;
   PackageInfo _packageInfo = PackageInfo(
     appName: 'Unknown',
     packageName: 'Unknown',
@@ -24,6 +30,15 @@ class _DebugScreenState extends State<DebugScreen> {
   void initState() {
     super.initState();
     _initPackageInfo();
+    _initLogfileInfo();
+    _initializeSwitch();
+  }
+
+  Future<void> _initializeSwitch() async {
+    bool status = await _isLoggingActive();
+    setState(() {
+      _status = status;
+    });
   }
 
   Future<void> _initPackageInfo() async {
@@ -31,6 +46,26 @@ class _DebugScreenState extends State<DebugScreen> {
     setState(() {
       _packageInfo = info;
     });
+  }
+
+  Future<void> _initLogfileInfo() async {
+    String logFiles = await _logStatistics();
+    setState(() {
+      _logFiles = logFiles;
+    });
+  }
+
+  Future<String> _logStatistics() async {
+    Tuple2<int, int> tuple = await User().sizeLogs();
+    String textLogs = AppLocalizations.of(context)!.numberLogfiles +
+        ": " +
+        tuple.item1.toString() +
+        " | " +
+        AppLocalizations.of(context)!.totalSizeLogFiles +
+        ": " +
+        Utils.formatBytes(tuple.item2);
+
+    return textLogs;
   }
 
   @override
@@ -51,6 +86,7 @@ class _DebugScreenState extends State<DebugScreen> {
                     colors: <Color>[CustomColors.mint, CustomColors.marine])),
           ),
           automaticallyImplyLeading: !User().isDebugProcessing,
+          foregroundColor: CustomColors.white,
           centerTitle: true,
           title: Text('Debug'),
           iconTheme: IconThemeData(
@@ -70,14 +106,22 @@ class _DebugScreenState extends State<DebugScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
+                alignment: Alignment.center,
+                margin: EdgeInsets.fromLTRB(30.0, 15.0, 30.0, 10.0),
+                child: Text(
+                  _status
+                      ? AppLocalizations.of(context)!.loggingActive
+                      : AppLocalizations.of(context)!.loggingInctive,
+                  style: _status
+                      ? CustomTextStyles.bodyGreen
+                      : CustomTextStyles.bodyRed,
+                )),
+            Container(
+                alignment: Alignment.center, child: Text(_logFiles ?? "")),
+            Container(
               margin: EdgeInsets.fromLTRB(30.0, 15.0, 30.0, 10.0),
-              child: FlatButton(
-                padding: EdgeInsets.fromLTRB(0.0, 15.0, 0.0, 15.0),
-                color: CustomColors.marine,
-                disabledColor: CustomColors.lightGrey,
-                shape: new RoundedRectangleBorder(
-                  borderRadius: new BorderRadius.circular(10.0),
-                ),
+              child: TextButton(
+                style: CustomButtonStyles.themeButtonyStyle(context),
                 child: User().isDebugProcessing
                     ? new CircularProgressIndicator()
                     : Text(
@@ -93,13 +137,8 @@ class _DebugScreenState extends State<DebugScreen> {
             ),
             Container(
               margin: EdgeInsets.fromLTRB(30.0, 15.0, 30.0, 10.0),
-              child: FlatButton(
-                padding: EdgeInsets.fromLTRB(0.0, 15.0, 0.0, 15.0),
-                color: CustomColors.marine,
-                disabledColor: CustomColors.lightGrey,
-                shape: new RoundedRectangleBorder(
-                  borderRadius: new BorderRadius.circular(10.0),
-                ),
+              child: TextButton(
+                style: CustomButtonStyles.themeButtonyStyle(context),
                 child: User().isDebugProcessing
                     ? new CircularProgressIndicator()
                     : Text(
@@ -114,34 +153,8 @@ class _DebugScreenState extends State<DebugScreen> {
               ),
             ),
             Container(
-              margin: EdgeInsets.fromLTRB(30.0, 15.0, 30.0, 10.0),
-              child: FlatButton(
-                padding: EdgeInsets.fromLTRB(0.0, 15.0, 0.0, 15.0),
-                color: CustomColors.marine,
-                disabledColor: CustomColors.lightGrey,
-                shape: new RoundedRectangleBorder(
-                  borderRadius: new BorderRadius.circular(10.0),
-                ),
-                child: User().isDebugProcessing
-                    ? new CircularProgressIndicator()
-                    : Text(
-                        'Show Logs',
-                        style: CustomTextStyles.bodyWhite,
-                      ),
-                onPressed: User().isDebugProcessing
-                    ? null
-                    : () async {
-                        String logs = await User().getLogs();
-                        Navigator.of(context).push(MaterialPageRoute(
-                          builder: (BuildContext context) =>
-                              ChangeNotifierProvider.value(
-                                  value: User(),
-                                  child: ConsoleScreen(
-                                    logs: logs,
-                                  )),
-                        ));
-                      },
-              ),
+              alignment: Alignment.center,
+              child: _buildLoggingButton(),
             ),
             Container(
               alignment: Alignment.center,
@@ -158,7 +171,103 @@ class _DebugScreenState extends State<DebugScreen> {
   }
 
   void _deleteLogs() async {
-    //TODO: show feedback?
-    await User().deleteLogs();
+    _showDialog(AppLocalizations.of(context)!.confirmDeleteLogs,
+        AppLocalizations.of(context)!.explanationDeleteLogs, context);
+  }
+
+  Widget _buildLoggingButton() {
+    Widget loggingSwitch = Switch(
+      value: _status,
+      activeColor: CustomColors.mint,
+      inactiveTrackColor: CustomColors.anthracite,
+      onChanged: (value) {
+        setState(() {
+          print('Switch value: ' + value.toString());
+          _status = value;
+          _setLoggingActive(value);
+        });
+      },
+    );
+
+    return InkWell(
+      child: Container(
+        margin: EdgeInsets.only(left: 15, right: 15),
+        child: Row(
+          children: <Widget>[
+            // _buildIcon(Icons.contrast),
+            Flexible(
+              fit: FlexFit.loose,
+              child: Container(
+                margin: EdgeInsets.fromLTRB(15, 15, 15, 15),
+                child: Text(
+                  AppLocalizations.of(context)!.loggingStatus,
+                  style:
+                      CustomTextStyles.themeStyleWhiteForDarkOrAzure(context),
+                  maxLines: 2,
+                  softWrap: true,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ),
+            loggingSwitch,
+          ],
+        ),
+      ),
+      onTap: null,
+    );
+  }
+
+  void _setLoggingActive(bool active) async {
+    _status = active;
+    StorageManager.setLoggingActive(active);
+    Logger.init();
+  }
+
+  Future<bool> _isLoggingActive() async {
+    bool result = await StorageManager.isLoggingActive();
+    return result;
+  }
+
+  Future<void> _showDialog(
+      String title, String message, BuildContext context) async {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: true,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(title, style: CustomTextStyles.title),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                Text(
+                  message,
+                  style: CustomTextStyles.bodyGrey,
+                ),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: Text(
+                AppLocalizations.of(context)!.cancel,
+                style: CustomTextStyles.bodyAzure,
+              ),
+              onPressed: () => Navigator.pop(context, false),
+            ),
+            TextButton(
+              child: Text(
+                'Ja',
+                style: CustomTextStyles.bodyAzure,
+              ),
+              onPressed: () {
+                User().deleteLogs();
+                Navigator.of(context).pop();
+                _initLogfileInfo();
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 }

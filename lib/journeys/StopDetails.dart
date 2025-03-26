@@ -101,6 +101,7 @@ class _StopDetailsScreenState extends State<StopDetailsScreen> {
         ),
         automaticallyImplyLeading: true,
         centerTitle: true,
+        foregroundColor: CustomColors.white,
         title: Text(AppLocalizations.of(context)!.stopDetails),
         leading: IconButton(
           onPressed: () {
@@ -139,7 +140,8 @@ class _StopDetailsScreenState extends State<StopDetailsScreen> {
           margin: EdgeInsets.fromLTRB(15, 15, 10, 5),
           alignment: Alignment.centerLeft,
           child: Text(AppLocalizations.of(context)!.passengerCodes,
-              style: CustomTextStyles.bodyBlackBold,
+              style:
+                  CustomTextStyles.themeStyleBoldWhiteForDarkOrBlack(context),
               maxLines: 1,
               softWrap: true,
               overflow: TextOverflow.ellipsis),
@@ -155,7 +157,10 @@ class _StopDetailsScreenState extends State<StopDetailsScreen> {
                     itemBuilder: (BuildContext context, int index) {
                       return OrderIdCheckListItem(
                           centerItems: false,
-                          useWhiteTextStyle: false,
+                          useWhiteTextStyle:
+                              Theme.of(context).brightness == Brightness.dark
+                                  ? true
+                                  : false,
                           showDivider: true,
                           orderId: widget.tourNode.hopOns[index].orderId,
                           number: getPhoneNumberForBookingCode(

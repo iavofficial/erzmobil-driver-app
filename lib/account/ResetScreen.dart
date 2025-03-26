@@ -40,6 +40,7 @@ class _ResetScreenState extends State<ResetScreen> {
         automaticallyImplyLeading: !User().isProcessing,
         centerTitle: true,
         title: Text(AppLocalizations.of(context)!.forgotPasswordTitle),
+        titleTextStyle: CustomTextStyles.bodyWhiteBold,
         iconTheme:
             IconThemeData(color: CustomColors.azure, opacity: 1.0, size: 40.0),
         leading: IconButton(
@@ -69,7 +70,8 @@ class _ResetScreenState extends State<ResetScreen> {
             Container(
               margin: EdgeInsets.fromLTRB(30.0, 20.0, 30.0, 30.0),
               child: Text(AppLocalizations.of(context)!.resetInfoLabel,
-                  style: CustomTextStyles.bodyGrey),
+                  style:
+                      CustomTextStyles.themeStyleWhiteForDarkOrGrey(context)),
             ),
             Form(
               key: _nameFormKey,
@@ -80,7 +82,8 @@ class _ResetScreenState extends State<ResetScreen> {
                     margin: EdgeInsets.fromLTRB(30.0, 20.0, 30.0, 10.0),
                     child: TextFormField(
                       keyboardType: TextInputType.emailAddress,
-                      style: CustomTextStyles.bodyGrey,
+                      style: CustomTextStyles.themeStyleWhiteForDarkOrGrey(
+                          context),
                       autocorrect: false,
                       enabled: !User().isProcessing,
                       decoration: new InputDecoration(
@@ -107,13 +110,8 @@ class _ResetScreenState extends State<ResetScreen> {
             ),
             Container(
               margin: EdgeInsets.fromLTRB(30.0, 15.0, 30.0, 10.0),
-              child: FlatButton(
-                padding: EdgeInsets.fromLTRB(0.0, 15.0, 0.0, 15.0),
-                color: CustomColors.marine,
-                disabledColor: CustomColors.lightGrey,
-                shape: new RoundedRectangleBorder(
-                  borderRadius: new BorderRadius.circular(10.0),
-                ),
+              child: TextButton(
+                style: CustomButtonStyles.themeButtonyStyle(context),
                 child: User().isProgressReset
                     ? new CircularProgressIndicator()
                     : Text(
@@ -143,7 +141,12 @@ class _ResetScreenState extends State<ResetScreen> {
         builder: (BuildContext context) =>
             ChangeNotifierProvider.value(value: User(), child: VerifyScreen()),
       ));
-    } else if (state == RequestState.ERROR_USER_UNKNOWN) {
+      _showDialog(AppLocalizations.of(context)!.dialogSendMailText,
+          AppLocalizations.of(context)!.verifyCodeInfoLabel, context);
+      return;
+    }
+
+    if (state == RequestState.ERROR_USER_UNKNOWN) {
       _showDialog(AppLocalizations.of(context)!.dialogErrorTitle,
           AppLocalizations.of(context)!.dialogUserUnknownErrorText, context);
     } else {
@@ -171,7 +174,7 @@ class _ResetScreenState extends State<ResetScreen> {
             ),
           ),
           actions: <Widget>[
-            FlatButton(
+            TextButton(
               child: Text(
                 'OK',
                 style: CustomTextStyles.bodyAzure,

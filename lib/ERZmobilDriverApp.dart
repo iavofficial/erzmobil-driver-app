@@ -1,56 +1,42 @@
 import 'package:erzmobil_driver/debug/Logger.dart';
 import 'package:erzmobil_driver/splashScreen/SplashScreen.dart';
+import 'package:erzmobil_driver/utils/ThemeManager.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:overlay_support/overlay_support.dart';
-import 'Constants.dart';
+import 'package:provider/provider.dart';
 
-class ERZmobilDriverApp extends StatelessWidget {
+class ERZmobilDriverApp extends StatefulWidget {
+  @override
+  _ERZmobilDriverAppState createState() => _ERZmobilDriverAppState();
+}
+
+class _ERZmobilDriverAppState extends State<ERZmobilDriverApp> {
   @override
   Widget build(BuildContext context) {
     Logger.info("App start");
 
-    return OverlaySupport.global(
-      child: MaterialApp(
-        debugShowCheckedModeBanner: false,
-        localizationsDelegates: [
-          AppLocalizations.delegate,
-          GlobalMaterialLocalizations.delegate,
-          GlobalWidgetsLocalizations.delegate,
-          GlobalCupertinoLocalizations.delegate,
-        ],
-        title: 'ERZmobil Driver App',
-        supportedLocales: [
-          const Locale('en'), // English
-          const Locale('de'), // German
-        ],
-        theme: ThemeData(
-          brightness: Brightness.light,
-          primaryColor: CustomColors.mint,
-          primarySwatch:
-              CustomColors.white, //createMaterialColor(Color(0xff419eb1)),
-          primaryTextTheme: TextTheme(headline6: CustomTextStyles.titleWhite),
-          accentColor: CustomColors.mint,
-          scaffoldBackgroundColor: CustomColors.white,
-          cardTheme: CardTheme(
-            color: CustomColors.mint,
-          ),
-          iconTheme: IconThemeData(
-              color: CustomColors.black, opacity: 1.0, size: 40.0),
-          textTheme: TextTheme(
-            headline6: CustomTextStyles.title,
-            bodyText2: CustomTextStyles.bodyGrey,
-            button: CustomTextStyles.bodyWhite,
-          ),
-          textSelectionTheme:
-              TextSelectionThemeData(cursorColor: CustomColors.anthracite),
-          fontFamily: 'SourceSansPro',
-          visualDensity: VisualDensity.adaptivePlatformDensity,
-        ),
-        home: SplashScreen(),
-      ),
-    );
+    return OverlaySupport.global(child: Consumer<ThemeNotifier>(
+      builder: (context, themeNotifier, child) {
+        return MaterialApp(
+          debugShowCheckedModeBanner: false,
+          localizationsDelegates: [
+            AppLocalizations.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          title: 'ERZmobil Driver App',
+          supportedLocales: [
+            const Locale('en'), // English
+            const Locale('de'), // German
+          ],
+          theme: themeNotifier.getTheme(),
+          home: SplashScreen(),
+        );
+      },
+    ));
   }
 
   MaterialColor createMaterialColor(Color color) {

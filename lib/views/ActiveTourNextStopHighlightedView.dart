@@ -20,7 +20,8 @@ class ActiveTourNextStopHighlightedView extends StatefulWidget {
       required this.isNextStop,
       required this.distanceToStop,
       required this.isDestination,
-      required this.showBottomIcon})
+      required this.showBottomIcon,
+      required this.phoneNumberList})
       : super(key: key);
 
   final TourNode currentNode;
@@ -30,6 +31,7 @@ class ActiveTourNextStopHighlightedView extends StatefulWidget {
   final bool showBottomIcon;
   final int distanceToStop;
   final int routeID;
+  final PhoneNumberList phoneNumberList;
 
   @override
   ActiveTourNextStopHighlightedState createState() =>
@@ -39,7 +41,6 @@ class ActiveTourNextStopHighlightedView extends StatefulWidget {
 class ActiveTourNextStopHighlightedState
     extends State<ActiveTourNextStopHighlightedView> {
   Map<int, int>? customerStatusList;
-  PhoneNumberList phoneNumberList = PhoneNumberList(null);
   bool customerStatusListLoaded = false;
 
   @override
@@ -48,7 +49,6 @@ class ActiveTourNextStopHighlightedState
     super.initState();
     Future.delayed(const Duration(milliseconds: 0), () {
       loadOrderStatus();
-      loadPhoneNumbers();
     });
   }
 
@@ -76,15 +76,6 @@ class ActiveTourNextStopHighlightedState
         });
       }
     }
-  }
-
-  void loadPhoneNumbers() async {
-    PhoneNumberList phoneNumbers =
-        await User().loadPhoneNumbers(widget.routeID);
-
-    setState(() {
-      this.phoneNumberList = phoneNumbers;
-    });
   }
 
   @override
@@ -121,6 +112,11 @@ class ActiveTourNextStopHighlightedState
           ),
           Text(getDistance(), style: CustomTextStyles.bodyWhite),
           _buildNextStopRow(context, widget.currentNode.label),
+          _buildRow(
+              context,
+              AppLocalizations.of(context)!.numberSeatsWheelchair,
+              getHopOnsOffsWheelchairText(),
+              textStyle: CustomTextStyles.bodyWhite),
           _buildRow(context, AppLocalizations.of(context)!.numberSeats,
               getHopOnsOffsText(),
               textStyle: CustomTextStyles.bodyWhite),
@@ -169,8 +165,8 @@ class ActiveTourNextStopHighlightedState
   String? getPhoneNumberForBookingCode(int orderId) {
     String phoneNumber = "";
 
-    if (phoneNumberList.data != null) {
-      List phoneNumbers = phoneNumberList.data;
+    if (widget.phoneNumberList.data != null) {
+      List phoneNumbers = widget.phoneNumberList.data;
       phoneNumbers.forEach((number) {
         if (number.userId == orderId) {
           phoneNumber = number.number;
@@ -227,6 +223,18 @@ class ActiveTourNextStopHighlightedState
     return hopOn;
   }
 
+  int getHopOnSeatsWheelChair() {
+    int seatsWheelchair = 0;
+
+    if (widget.currentNode.hopOns != null) {
+      widget.currentNode.hopOns.forEach((v) {
+        seatsWheelchair += v.seatsWheelchair;
+      });
+    }
+
+    return seatsWheelchair;
+  }
+
   String getHopOnsOffsText() {
     int hopOn = getHopOnSeats();
     int hopOff = 0;
@@ -234,6 +242,19 @@ class ActiveTourNextStopHighlightedState
     if (widget.currentNode.hopOffs != null) {
       widget.currentNode.hopOffs.forEach((v) {
         hopOff += v.seats;
+      });
+    }
+
+    return "+$hopOn / -$hopOff";
+  }
+
+  String getHopOnsOffsWheelchairText() {
+    int hopOn = getHopOnSeatsWheelChair();
+    int hopOff = 0;
+
+    if (widget.currentNode.hopOffs != null) {
+      widget.currentNode.hopOffs.forEach((v) {
+        hopOff += v.seatsWheelchair;
       });
     }
 

@@ -58,7 +58,8 @@ class TourListView extends StatelessWidget {
                     children: [
                       Icon(
                         Icons.no_transfer,
-                        color: CustomColors.anthracite,
+                        color: CustomColors.themeStyleAntraciteForDarkOrWhite(
+                            context),
                       ),
                       Text(AppLocalizations.of(context)!.noJourneys),
                     ],
