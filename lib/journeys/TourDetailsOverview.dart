@@ -2,6 +2,7 @@ import 'package:erzmobil_driver/UserMap.dart';
 import 'package:erzmobil_driver/journeys/PhoneNumberListScreen.dart';
 import 'package:erzmobil_driver/journeys/StopDetails.dart';
 import 'package:erzmobil_driver/model/RequestState.dart';
+import 'package:erzmobil_driver/model/TabControllerModel.dart';
 import 'package:erzmobil_driver/model/Tours.dart';
 import 'package:erzmobil_driver/model/User.dart';
 import 'package:erzmobil_driver/views/TourInfoDetailsView.dart';
@@ -31,6 +32,7 @@ class TourDetailsOverview extends StatelessWidget {
         ),
         automaticallyImplyLeading: true,
         centerTitle: true,
+        foregroundColor: CustomColors.white,
         title: Text(AppLocalizations.of(context)!.detailedJourneys),
         actions: <Widget>[
           Offstage(
@@ -156,23 +158,32 @@ class TourDetailsOverview extends StatelessWidget {
     bool isEnabled = !User().isProgressAnyTourAction &&
         (currentRoute.status == 'Frozen' || currentRoute.status == 'Started');
     bool isStarted = currentRoute.status == 'Started';
+    bool isDarkTheme = Theme.of(context).brightness == Brightness.dark;
     String buttonLabel = isStarted
         ? AppLocalizations.of(context)!.stopTour
         : AppLocalizations.of(context)!.startTour;
+
+    MaterialStateProperty<Color> backgroundColor = isDarkTheme
+        ? MaterialStateProperty.all<Color>(CustomColors.mint)
+        : MaterialStateProperty.all<Color>(CustomColors.marine);
+
+    if (isEnabled == false) {
+      backgroundColor =
+          MaterialStateProperty.all<Color>(CustomColors.lightGrey);
+    }
 
     return Container(
       width: double.infinity,
       padding: EdgeInsets.symmetric(horizontal: 15),
       child: ElevatedButton(
         style: ButtonStyle(
-            backgroundColor:
-                MaterialStateProperty.all<Color>(CustomColors.marine),
+            backgroundColor: backgroundColor,
             foregroundColor: MaterialStateProperty.resolveWith<Color>(
               (Set<MaterialState> states) {
                 if (states.contains(MaterialState.pressed))
                   return Theme.of(context).colorScheme.primary.withOpacity(0.5);
                 else if (states.contains(MaterialState.disabled))
-                  return CustomColors.lightGrey;
+                  return CustomColors.black;
                 return CustomColors.white; // Use the component's default.
               },
             )),
@@ -216,6 +227,7 @@ class TourDetailsOverview extends StatelessWidget {
       }
     } else {
       Navigator.of(context).pop();
+      TabControllerModel().showActiveTourTab();
     }
   }
 
@@ -283,7 +295,7 @@ class TourDetailsOverview extends StatelessWidget {
             ),
           ),
           actions: <Widget>[
-            FlatButton(
+            TextButton(
               child: Text(
                 'OK',
                 style: CustomTextStyles.bodyAzure,

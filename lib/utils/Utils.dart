@@ -65,4 +65,13 @@ class Utils {
     }
     return Tuple2(false, (distance * 1000).round());
   }
+
+  static String formatBytes(int bytes, [int decimals = 2]) {
+    if (bytes <= 0) return "0 Bytes";
+    const int k = 1024;
+    const List<String> sizes = ["Bytes", "kB", "MB", "GB", "TB"];
+    int i = (log(bytes) / log(k)).floor();
+    double size = bytes / pow(k, i);
+    return "${size.toStringAsFixed(decimals)} ${sizes[i]}";
+  }
 }

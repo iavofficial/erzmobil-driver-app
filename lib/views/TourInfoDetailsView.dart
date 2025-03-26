@@ -59,21 +59,24 @@ class TourDetailInfoView extends StatelessWidget {
               currentNode.label,
               null,
               () => null,
-              textStyle: CustomTextStyles.bodyBlackBold),
+              textStyle:
+                  CustomTextStyles.themeStyleBoldWhiteForDarkOrBlack(context)),
           _buildRow(
               context,
               Text(""),
               AppLocalizations.of(context)!.numberSeats,
               getHopOnsOffsText(),
               () => null,
-              textStyle: CustomTextStyles.bodyBlack),
+              textStyle:
+                  CustomTextStyles.themeStyleWhiteForDarkOrBlack(context)),
           _buildRow(
               context,
               Text(""),
               AppLocalizations.of(context)!.numberSeatsWheelchair,
               getHopOnsOffsWheelchairText(),
               () => null,
-              textStyle: CustomTextStyles.bodyBlack),
+              textStyle:
+                  CustomTextStyles.themeStyleWhiteForDarkOrBlack(context)),
           _buildRow(
               context,
               Offstage(
@@ -86,7 +89,8 @@ class TourDetailInfoView extends StatelessWidget {
               AppLocalizations.of(context)!.dateTimeStartViewLabel,
               getStartTime(),
               () => null,
-              textStyle: CustomTextStyles.bodyBlack),
+              textStyle:
+                  CustomTextStyles.themeStyleWhiteForDarkOrBlack(context)),
         ],
       ),
     );
@@ -151,7 +155,9 @@ class TourDetailInfoView extends StatelessWidget {
                       alignment: Alignment.topLeft,
                       child: Text(
                         title,
-                        style: textStyle,
+                        style: Theme.of(context).brightness == Brightness.dark
+                            ? CustomTextStyles.bodyWhite
+                            : textStyle,
                         maxLines: 2,
                         softWrap: true,
                         overflow: TextOverflow.ellipsis,
@@ -165,7 +171,8 @@ class TourDetailInfoView extends StatelessWidget {
                         alignment: Alignment.topRight,
                         child: Text(
                           information,
-                          style: CustomTextStyles.bodyBlack,
+                          style: CustomTextStyles.themeStyleWhiteForDarkOrBlack(
+                              context),
                           maxLines: 2,
                           softWrap: true,
                           overflow: TextOverflow.ellipsis,
@@ -188,7 +195,9 @@ class TourDetailInfoView extends StatelessWidget {
                       alignment: Alignment.topLeft,
                       child: Text(
                         title,
-                        style: textStyle,
+                        style: Theme.of(context).brightness == Brightness.dark
+                            ? CustomTextStyles.bodyWhite
+                            : textStyle,
                         maxLines: 2,
                         softWrap: true,
                         overflow: TextOverflow.ellipsis,

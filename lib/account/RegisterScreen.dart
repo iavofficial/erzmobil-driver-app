@@ -79,6 +79,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   colors: <Color>[CustomColors.mint, CustomColors.marine])),
         ),
         automaticallyImplyLeading: !User().isProcessing,
+        foregroundColor: CustomColors.white,
         centerTitle: true,
         title: Text(AppLocalizations.of(context)!.signupTitle),
         leading: IconButton(
@@ -121,13 +122,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     child: TextFormField(
                       autovalidateMode: AutovalidateMode.onUserInteraction,
                       obscureText: false,
-                      style: CustomTextStyles.bodyGrey,
+                      style: CustomTextStyles.themeStyleWhiteForDarkOrGrey(
+                          context),
                       autocorrect: false,
                       enabled: !User().isProcessing,
                       decoration: new InputDecoration(
                           labelText: AppLocalizations.of(context)!
                               .placeholderGivenName,
-                          labelStyle: CustomTextStyles.bodyBlack,
+                          labelStyle:
+                              CustomTextStyles.themeStyleWhiteForDarkOrBlack(
+                                  context),
                           errorMaxLines: 3),
                       validator: (value) {
                         if (value!.isEmpty) {
@@ -158,13 +162,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     child: TextFormField(
                       autovalidateMode: AutovalidateMode.onUserInteraction,
                       obscureText: false,
-                      style: CustomTextStyles.bodyGrey,
+                      style: CustomTextStyles.themeStyleWhiteForDarkOrGrey(
+                          context),
                       autocorrect: false,
                       enabled: !User().isProcessing,
                       decoration: new InputDecoration(
                           labelText: AppLocalizations.of(context)!
                               .placeholderFamilyName,
-                          labelStyle: CustomTextStyles.bodyBlack,
+                          labelStyle:
+                              CustomTextStyles.themeStyleWhiteForDarkOrBlack(
+                                  context),
                           errorMaxLines: 3),
                       validator: (value) {
                         if (value!.isEmpty) {
@@ -206,7 +213,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       autoValidateMode: AutovalidateMode.onUserInteraction,
                       hintText:
                           AppLocalizations.of(context)!.placeholderPhoneNumber,
-                      selectorTextStyle: TextStyle(color: Colors.black),
+                      textStyle: CustomTextStyles.themeStyleWhiteForDarkOrBlack(
+                          context),
+                      selectorTextStyle:
+                          CustomTextStyles.themeStyleWhiteForDarkOrBlack(
+                              context),
                       initialValue: number,
                       formatInput: false,
                       keyboardType: TextInputType.numberWithOptions(
@@ -253,13 +264,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     child: TextFormField(
                       autovalidateMode: AutovalidateMode.onUserInteraction,
                       obscureText: false,
-                      style: CustomTextStyles.bodyGrey,
+                      style: CustomTextStyles.themeStyleWhiteForDarkOrGrey(
+                          context),
                       autocorrect: false,
                       enabled: !User().isProcessing,
                       decoration: new InputDecoration(
                           labelText:
                               AppLocalizations.of(context)!.placeholderAddress,
-                          labelStyle: CustomTextStyles.bodyBlack,
+                          labelStyle:
+                              CustomTextStyles.themeStyleWhiteForDarkOrBlack(
+                                  context),
                           errorMaxLines: 3),
                       validator: (value) {
                         if (value!.isEmpty) {
@@ -287,7 +301,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   Container(
                     margin: EdgeInsets.fromLTRB(20.0, 20.0, 20.0, 5.0),
                     child: TextFormField(
-                      style: CustomTextStyles.bodyGrey,
+                      style: CustomTextStyles.themeStyleWhiteForDarkOrGrey(
+                          context),
                       keyboardType: TextInputType.emailAddress,
                       autovalidateMode: AutovalidateMode.onUserInteraction,
                       autocorrect: false,
@@ -295,7 +310,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       decoration: new InputDecoration(
                           labelText:
                               AppLocalizations.of(context)!.placeholderEmail,
-                          labelStyle: CustomTextStyles.bodyBlack,
+                          labelStyle:
+                              CustomTextStyles.themeStyleWhiteForDarkOrBlack(
+                                  context),
                           errorMaxLines: 2),
                       validator: (value) {
                         if (value!.isEmpty ||
@@ -324,7 +341,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     child: TextFormField(
                       autovalidateMode: AutovalidateMode.onUserInteraction,
                       obscureText: obscurePwd,
-                      style: CustomTextStyles.bodyGrey,
+                      style: CustomTextStyles.themeStyleWhiteForDarkOrGrey(
+                          context),
                       autocorrect: false,
                       enabled: !User().isProcessing,
                       controller: controller,
@@ -334,7 +352,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 obscurePwd
                                     ? Icons.visibility
                                     : Icons.visibility_off,
-                                color: CustomColors.black,
+                                color: Theme.of(context).brightness ==
+                                        Brightness.dark
+                                    ? CustomColors.white
+                                    : CustomColors.black,
                                 size: 18,
                               ),
                               onPressed: () {
@@ -344,7 +365,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               }),
                           labelText:
                               AppLocalizations.of(context)!.placeholderPassword,
-                          labelStyle: CustomTextStyles.bodyBlack,
+                          labelStyle:
+                              CustomTextStyles.themeStyleWhiteForDarkOrBlack(
+                                  context),
                           errorMaxLines: 4),
                       validator: (value) {
                         if (value!.isEmpty ||
@@ -377,7 +400,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     child: TextFormField(
                       autovalidateMode: AutovalidateMode.onUserInteraction,
                       obscureText: obscureControlPwd,
-                      style: CustomTextStyles.bodyGrey,
+                      style: CustomTextStyles.themeStyleWhiteForDarkOrGrey(
+                          context),
                       autocorrect: false,
                       enabled: !User().isProcessing,
                       decoration: new InputDecoration(
@@ -386,7 +410,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 obscureControlPwd
                                     ? Icons.visibility
                                     : Icons.visibility_off,
-                                color: CustomColors.black,
+                                color: Theme.of(context).brightness ==
+                                        Brightness.dark
+                                    ? CustomColors.white
+                                    : CustomColors.black,
                                 size: 18,
                               ),
                               onPressed: () {
@@ -396,7 +423,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               }),
                           labelText: AppLocalizations.of(context)!
                               .placeholderPasswordRepetition,
-                          labelStyle: CustomTextStyles.bodyBlack,
+                          labelStyle:
+                              CustomTextStyles.themeStyleWhiteForDarkOrBlack(
+                                  context),
                           errorMaxLines: 4),
                       validator: (value) {
                         if (value != controller.text) {
@@ -419,13 +448,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
             ),
             Container(
               margin: EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
-              child: FlatButton(
-                padding: EdgeInsets.fromLTRB(0.0, 15.0, 0.0, 15.0),
-                color: CustomColors.marine,
-                disabledColor: CustomColors.lightGrey,
-                shape: new RoundedRectangleBorder(
-                  borderRadius: new BorderRadius.circular(10.0),
-                ),
+              child: TextButton(
+                style: CustomButtonStyles.themeButtonyStyle(context),
                 child: User().isProgressRegister
                     ? new CircularProgressIndicator()
                     : Text(
@@ -504,13 +528,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
               children: <Widget>[
                 Text(
                   message,
-                  style: CustomTextStyles.bodyGrey,
+                  style: CustomTextStyles.themeStyleWhiteForDarkOrGrey(context),
                 ),
               ],
             ),
           ),
           actions: <Widget>[
-            FlatButton(
+            TextButton(
               child: Text(
                 'OK',
                 style: CustomTextStyles.bodyAzure,

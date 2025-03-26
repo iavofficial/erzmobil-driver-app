@@ -9,6 +9,9 @@ class Strings {
   Strings._();
 
   static const String appName = 'ERZmobil-Driver';
+  static const String logsWriteDirectoryName = 'ERZmobilDriverLogs';
+  static const String logsExportDirectoryName = 'Exported';
+  static const String logFilesDirectoryName = 'Logs';
 
   static const String assetPathBusStop = 'assets/ic_haltestelle.png';
   static const String assetPathBus = 'assets/ic_bus.png';
@@ -41,8 +44,23 @@ class Strings {
 class CustomIconThemeData {
   CustomIconThemeData._();
 
+  static IconThemeData themeIconStyleWhiteForDarkOrBlue(BuildContext context) {
+    if (Theme.of(context).brightness == Brightness.dark) {
+      return navigationIconWhite;
+    }
+    return navigationIconBlue;
+  }
+
+  static IconThemeData themeIconStyleWhiteForDarkOrGrey(BuildContext context) {
+    if (Theme.of(context).brightness == Brightness.dark) {
+      return navigationIconWhite;
+    }
+    return navigationIconGrey;
+  }
+
   static const IconThemeData navigationIconBlue =
       const IconThemeData(color: CustomColors.mint, opacity: 1.0, size: 30.0);
+
   static const IconThemeData navigationIconGrey = const IconThemeData(
       color: CustomColors.darkGrey, opacity: 1.0, size: 30.0);
 
@@ -50,8 +68,71 @@ class CustomIconThemeData {
       const IconThemeData(color: Colors.white, opacity: 1.0, size: 30.0);
 }
 
+class CustomButtonStyles {
+  CustomButtonStyles._();
+
+  static ButtonStyle themeButtonyStyle(BuildContext context) {
+    if (Theme.of(context).brightness == Brightness.dark) {
+      return flatButtonStyleDark;
+    }
+    return flatButtonStyle;
+  }
+
+  static final ButtonStyle flatButtonStyleDark = TextButton.styleFrom(
+      padding: EdgeInsets.fromLTRB(0.0, 15.0, 0.0, 15.0),
+      backgroundColor: CustomColors.mint,
+      disabledBackgroundColor: CustomColors.lightGrey,
+      shape: new RoundedRectangleBorder(
+        borderRadius: new BorderRadius.circular(10.0),
+      ));
+
+  static final ButtonStyle flatButtonStyle = TextButton.styleFrom(
+      padding: EdgeInsets.fromLTRB(0.0, 15.0, 0.0, 15.0),
+      backgroundColor: CustomColors.marine,
+      disabledBackgroundColor: CustomColors.lightGrey,
+      shape: new RoundedRectangleBorder(
+        borderRadius: new BorderRadius.circular(10.0),
+      ));
+}
+
 class CustomTextStyles {
   CustomTextStyles._();
+
+  static TextStyle themeStyleWhiteForDarkOrGrey(BuildContext context) {
+    if (Theme.of(context).brightness == Brightness.dark) {
+      return bodyWhite;
+    }
+    return bodyGrey;
+  }
+
+  static TextStyle themeStyleWhiteForDarkOrBlack(BuildContext context) {
+    if (Theme.of(context).brightness == Brightness.dark) {
+      return bodyWhite;
+    }
+    return bodyBlack;
+  }
+
+  static TextStyle themeStyleBoldWhiteForDarkOrBlack(BuildContext context) {
+    if (Theme.of(context).brightness == Brightness.dark) {
+      return bodyWhiteBold;
+    }
+    return bodyBlackBold;
+  }
+
+  static TextStyle themeStyleNavigationWhiteForDarkOrNavigationGrey(
+      BuildContext context) {
+    if (Theme.of(context).brightness == Brightness.dark) {
+      return navigationWhite;
+    }
+    return navigationGrey;
+  }
+
+  static TextStyle themeStyleWhiteForDarkOrAzure(BuildContext context) {
+    if (Theme.of(context).brightness == Brightness.dark) {
+      return bodyWhite;
+    }
+    return bodyAzure;
+  }
 
   static const TextStyle title = const TextStyle(
       fontSize: 16.0,
@@ -115,6 +196,10 @@ class CustomTextStyles {
       fontSize: 13.0, fontWeight: FontWeight.bold, color: CustomColors.black);
   static const TextStyle bodyRedVerySmall = const TextStyle(
       fontSize: 10.0, fontWeight: FontWeight.normal, color: Colors.red);
+  static const TextStyle bodyRed = const TextStyle(
+      fontSize: 16.0, fontWeight: FontWeight.normal, color: Colors.red);
+  static const TextStyle bodyGreen = const TextStyle(
+      fontSize: 16.0, fontWeight: FontWeight.normal, color: Colors.green);
   static const TextStyle bodyGreySmall = const TextStyle(
       fontSize: 10.0,
       fontWeight: FontWeight.normal,
@@ -147,6 +232,70 @@ class CustomTextStyles {
 
 class CustomColors {
   CustomColors._();
+
+  static MaterialColor themeStyleMintForDarkOrMarine(BuildContext context) {
+    if (Theme.of(context).brightness == Brightness.dark) {
+      return mint;
+    }
+    return marine;
+  }
+
+  static MaterialColor themeStyleWhiteForDarkOrMarine(BuildContext context) {
+    if (Theme.of(context).brightness == Brightness.dark) {
+      return white;
+    }
+    return marine;
+  }
+
+  static MaterialColor themeStyleBlackForDarkOrWhite(BuildContext context) {
+    if (Theme.of(context).brightness == Brightness.dark) {
+      return black;
+    }
+    return white;
+  }
+
+  static MaterialColor themeStyleWhiteForDarkOrBlack(BuildContext context) {
+    if (Theme.of(context).brightness == Brightness.dark) {
+      return white;
+    }
+    return black;
+  }
+
+  static MaterialColor themeStyleDarkGreyForDarkOrWhite(BuildContext context) {
+    if (Theme.of(context).brightness == Brightness.dark) {
+      return darkGrey;
+    }
+    return white;
+  }
+
+  static MaterialColor themeStyleWhiteForDarkOrDarkGrey(BuildContext context) {
+    if (Theme.of(context).brightness == Brightness.dark) {
+      return white;
+    }
+    return darkGrey;
+  }
+
+  static MaterialColor themeStyleAntraciteForDarkOrWhite(BuildContext context) {
+    if (Theme.of(context).brightness == Brightness.dark) {
+      return white;
+    }
+    return anthracite;
+  }
+
+  static MaterialColor themeStyleBlackForDarkOrLightGrey(BuildContext context) {
+    if (Theme.of(context).brightness == Brightness.dark) {
+      return black;
+    }
+    return lightGrey;
+  }
+
+  static MaterialColor themeStyleDarkGreyForDarkOrLightGrey(
+      BuildContext context) {
+    if (Theme.of(context).brightness == Brightness.dark) {
+      return darkGrey;
+    }
+    return lightGrey;
+  }
 
   static const MaterialColor white = const MaterialColor(
     0xFFFFFFFF,

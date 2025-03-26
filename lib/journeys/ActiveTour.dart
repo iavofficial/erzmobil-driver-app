@@ -1,4 +1,5 @@
 import 'package:erzmobil_driver/debug/Logger.dart';
+import 'package:erzmobil_driver/model/PhoneNumberList.dart';
 import 'package:erzmobil_driver/location/LocationMangager.dart';
 import 'package:erzmobil_driver/model/Tours.dart';
 import 'package:erzmobil_driver/model/User.dart';
@@ -26,11 +27,45 @@ class _ActiveTourState extends State<ActiveTour> {
   int lastFinishedTourNode = 0;
   int activeNodeIdx = 0;
   Position? _currentLocation;
+  PhoneNumberList phoneNumberList = PhoneNumberList(null);
+  final GlobalKey _targetKey = GlobalKey();
+
+  void _scrollToTarget() {
+    if (activeNodeIdx > 0 &&
+        currentRoute != null &&
+        currentRoute!.nodes != null) {
+      final context = _targetKey.currentContext;
+
+      if (context != null) {
+        Scrollable.ensureVisible(
+          context,
+          duration: Duration(milliseconds: 500),
+          curve: Curves.easeInOut,
+        );
+      }
+    }
+  }
 
   @override
   void initState() {
     Logger.info("Active Tour: initState ActiveTour screen");
     super.initState();
+    Future.delayed(const Duration(milliseconds: 0), () {
+      loadPhoneNumbers();
+    });
+  }
+
+  void loadPhoneNumbers() async {
+    if (currentRoute != null && currentRoute!.routeId != null) {
+      PhoneNumberList phoneNumbers =
+          await User().loadPhoneNumbers(currentRoute!.routeId!);
+      setState(() {
+        this.phoneNumberList = phoneNumbers;
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          _scrollToTarget();
+        });
+      });
+    }
   }
 
   @override
@@ -90,7 +125,7 @@ class _ActiveTourState extends State<ActiveTour> {
           children: [
             Icon(
               Icons.no_transfer,
-              color: CustomColors.anthracite,
+              color: CustomColors.themeStyleAntraciteForDarkOrWhite(context),
             ),
             Text(AppLocalizations.of(context)!.noActiveTour),
           ],
@@ -131,39 +166,70 @@ class _ActiveTourState extends State<ActiveTour> {
   }
 
   Widget _buildListView(BuildContext context, bool highlightNextNode) {
-    return ListView.builder(
-        itemCount: currentRoute!.nodes!.length,
-        itemBuilder: (BuildContext context, int index) {
+    return SingleChildScrollView(
+      child: Column(
+        children: List.generate(currentRoute!.nodes!.length, (index) {
+          TourNode currentNode = currentRoute!.nodes![index];
+          int routeId = currentRoute!.routeId!;
           bool isActiveNode = index == activeNodeIdx;
+          bool isDestination = index == currentRoute!.nodes!.length - 1;
+          bool isStart = index == 0;
+          bool isDisabled = index < activeNodeIdx;
+          bool isHistoryItem = currentRoute!.status == 'Finished';
           bool isNextNode = false;
           if (index != 0 && (index - 1) == activeNodeIdx) {
             isNextNode = true;
           }
+
+          Widget treeView;
+          if (isActiveNode || (highlightNextNode && isNextNode)) {
+            GlobalKey? key = _targetKey;
+            treeView = getHighlightedTourNodeWidget(
+                key, currentNode, routeId, isStart, isNextNode, isDestination);
+          } else {
+            treeView = getNormalTourNodeWidget(isDisabled, currentNode, routeId,
+                isHistoryItem, isStart, isDestination);
+          }
+
           return Column(children: [
-            isActiveNode || (highlightNextNode && isNextNode)
-                ? ActiveTourNextStopHighlightedView(
-                    currentNode: currentRoute!.nodes![index],
-                    routeID: currentRoute!.routeId!,
-                    isStart: index == 0,
-                    isNextStop: isNextNode,
-                    distanceToStop: User().distanceToStop,
-                    isDestination: index == currentRoute!.nodes!.length - 1,
-                    showBottomIcon: true,
-                  )
-                : ActiveTourExtendedStopView(
-                    isDisabled: index < activeNodeIdx,
-                    currentNode: currentRoute!.nodes![index],
-                    routeID: currentRoute!.routeId!,
-                    isHistoryItem: currentRoute!.status == 'Finished',
-                    isStart: index == 0,
-                    isDestination: index == currentRoute!.nodes!.length - 1,
-                    showBottomIcon: true),
-            const Divider(
+            treeView,
+            Divider(
               height: 0,
               thickness: 1,
+              color: CustomColors.themeStyleWhiteForDarkOrBlack(context),
             ),
           ]);
-        });
+        }),
+      ),
+    );
+  }
+
+  Widget getHighlightedTourNodeWidget(GlobalKey? key, TourNode currentNode,
+      int routeId, bool isStart, bool isNextNode, bool isDestination) {
+    return ActiveTourNextStopHighlightedView(
+        key: key,
+        currentNode: currentNode,
+        routeID: routeId,
+        isStart: isStart,
+        isNextStop: isNextNode,
+        distanceToStop: User().distanceToStop,
+        isDestination: isDestination,
+        showBottomIcon: true,
+        phoneNumberList: this.phoneNumberList);
+  }
+
+  Widget getNormalTourNodeWidget(bool isDisabled, TourNode currentNode,
+      int routeId, bool isHistoryItem, bool isStart, bool isDestination) {
+    return ActiveTourExtendedStopView(
+      isDisabled: isDisabled,
+      currentNode: currentNode,
+      routeID: routeId,
+      isHistoryItem: isHistoryItem,
+      isStart: isStart,
+      isDestination: isDestination,
+      showBottomIcon: true,
+      phoneNumberList: this.phoneNumberList,
+    );
   }
 
   Widget getButton(BuildContext context) {
@@ -179,8 +245,9 @@ class _ActiveTourState extends State<ActiveTour> {
       padding: EdgeInsets.symmetric(horizontal: 15),
       child: ElevatedButton(
         style: ButtonStyle(
-            backgroundColor:
-                MaterialStateProperty.all<Color>(CustomColors.marine),
+            backgroundColor: Theme.of(context).brightness == Brightness.dark
+                ? MaterialStateProperty.all<Color>(CustomColors.mint)
+                : MaterialStateProperty.all<Color>(CustomColors.marine),
             foregroundColor: MaterialStateProperty.resolveWith<Color>(
               (Set<MaterialState> states) {
                 if (states.contains(MaterialState.pressed))

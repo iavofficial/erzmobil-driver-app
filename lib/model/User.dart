@@ -21,17 +21,17 @@ import 'package:amazon_cognito_identity_dart_2/cognito.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:erzmobil_driver/push/PushNotificationService.dart';
 import 'package:erzmobil_driver/utils/Utils.dart';
-import 'package:f_logs/f_logs.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_archive/flutter_archive.dart';
 import 'package:flutter_email_sender/flutter_email_sender.dart';
+import 'package:flutter_logs/flutter_logs.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:intl/intl.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tuple/tuple.dart';
 import 'Bus.dart';
@@ -40,6 +40,7 @@ class User extends ChangeNotifier with LocationListener {
   static final User _instance = new User._internal();
 
   bool _isMainTosViewed = true;
+  bool _isHeatTosViewed = true;
   bool _isPrivacyDataViewed = true;
   bool _isCognitoInitialized = false;
   CognitoData? _cognitoData;
@@ -78,7 +79,7 @@ class User extends ChangeNotifier with LocationListener {
   CognitoUser? _cognitoUser;
   CognitoUserSession? _cognitoUserSession;
 
-  bool useDirectus = false;
+  bool useDirectus = true;
   DirectusToken? directusToken;
   DateTime? directusTokenExpirationDate;
 
@@ -90,6 +91,7 @@ class User extends ChangeNotifier with LocationListener {
 
   void resetViewedState() {
     _isMainTosViewed = true;
+    _isHeatTosViewed = true;
     _isPrivacyDataViewed = true;
   }
 
@@ -99,6 +101,15 @@ class User extends ChangeNotifier with LocationListener {
 
   set isMainTosViewed(bool viewed) {
     this._isMainTosViewed = viewed;
+  }
+
+  bool get isHeatTosViewed {
+    return _isHeatTosViewed;
+  }
+
+  set isHeatTosViewed(bool viewed) {
+    this._isHeatTosViewed = viewed;
+    notifyListeners();
   }
 
   bool get isPrivacyDataViewed {
@@ -111,40 +122,75 @@ class User extends ChangeNotifier with LocationListener {
 
   Future<void> deleteLogs() async {
     _setDebugProcessing(true);
-    await FLog.clearLogs();
+    Directory? externalDirectory;
+    File? zipFile;
+    try {
+      if (Platform.isIOS) {
+        externalDirectory = await getApplicationDocumentsDirectory();
+      } else {
+        externalDirectory = await getExternalStorageDirectory();
+      }
+
+      String path = externalDirectory!.path +
+          "/" +
+          Strings.logsWriteDirectoryName +
+          "/" +
+          Strings.logsExportDirectoryName;
+      final dir = Directory(path);
+      dir.deleteSync(recursive: true);
+    } catch (e) {
+      Logger.e("Delete exported logfiles in path not.");
+    }
+
+    FlutterLogs.clearLogs();
     _setDebugProcessing(false);
   }
 
-  Future<String> getLogs() async {
-    String logString = "";
+  Future<Tuple2<int, int>> sizeLogs() async {
+    _setDebugProcessing(true);
+    int numberFiles = 0;
+    int totalFileSize = 0;
+    Tuple2<int, int> tuple;
+
+    Directory? externalDirectory;
     try {
-      List<Log> logs = await FLog.getAllLogs();
+      if (Platform.isIOS) {
+        externalDirectory = await getApplicationDocumentsDirectory();
+      } else {
+        externalDirectory = await getExternalStorageDirectory();
+      }
 
-      logs.forEach((log) {
-        if (log.text != null) {
-          logString += "\n";
-          logString += log.timestamp! + ": " + log.text!;
-          logString += "\n";
+      String path = externalDirectory!.path +
+          "/" +
+          Strings.logsWriteDirectoryName +
+          "/" +
+          Strings.logFilesDirectoryName;
+      final dir = Directory(path);
+      if (await dir.exists()) {
+        await for (var entity
+            in dir.list(recursive: true, followLinks: false)) {
+          if (entity is File) {
+            final fileSize = await entity.length();
+            numberFiles += 1;
+            totalFileSize += fileSize;
+            print('File: ${entity.path}, Size: $fileSize bytes');
+          }
         }
-      });
+      } else {
+        print('Directory does not exist');
+      }
     } catch (e) {
-      print(e);
+      Logger.e("Error on checking size for logfiles in path.");
     }
-
-    return logString;
+    tuple = Tuple2(numberFiles, totalFileSize);
+    _setDebugProcessing(false);
+    return tuple;
   }
 
   Future<void> sendLogs() async {
     _setDebugProcessing(true);
 
-    File? logFile;
-    try {
-      logFile = await FLog.exportLogs();
-    } catch (e) {
-      print(e);
-    }
-
-    if (logFile != null && logFile.existsSync()) {
+    await Logger.exportAllLogs().then((value) async {
       //zip file
       Directory? externalDirectory;
       File? zipFile;
@@ -155,52 +201,50 @@ class User extends ChangeNotifier with LocationListener {
           externalDirectory = await getExternalStorageDirectory();
         }
 
-        if (externalDirectory != null) {
-          zipFile = File("${externalDirectory.path}/logs.zip");
-          await ZipFile.createFromFiles(
-              sourceDir: logFile.parent, files: [logFile], zipFile: zipFile);
+        FlutterLogs.logInfo(
+            "ErzMobil-Driver", "found", 'External Storage:$externalDirectory');
+
+        zipFile = File("${externalDirectory!.path}/$value");
+
+        if (zipFile.existsSync()) {
+          Logger.info("Logs found and ready to export!");
+          StringBuffer buffer = StringBuffer();
+          buffer.write(
+              'Bitte teilen Sie uns mit, warum Sie uns dieses Log schicken.\nPlease tell us why you are sending the log file.\n\n');
+          DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
+          if (Platform.isIOS) {
+            IosDeviceInfo iosInfo = await deviceInfo.iosInfo;
+            buffer.write('systemVersion: ${iosInfo.systemVersion} \n');
+            buffer.write('model: ${iosInfo.model} \n');
+            buffer.write('name: ${iosInfo.name} \n');
+          } else {
+            AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
+            buffer.write('version.baseOS: ${androidInfo.version.baseOS} \n');
+            buffer.write('manufacturer: ${androidInfo.manufacturer} \n');
+            buffer.write('model: ${androidInfo.model} \n');
+          }
+
+          //sendZip
+          final Email email = Email(
+            body: buffer.toString(),
+            subject: 'Erzmobil User App Logs',
+            recipients: ['erzmobil@smartcity-zwoenitz.de'],
+            attachmentPaths: [zipFile.path],
+            isHTML: false,
+          );
+
+          try {
+            await FlutterEmailSender.send(email);
+          } catch (e) {
+            print(e);
+          }
+        } else {
+          Logger.e("File not found in storage.");
         }
       } catch (e) {
         print(e);
       }
-
-      if (zipFile != null && zipFile.existsSync()) {
-        //obtain device data
-        StringBuffer buffer = StringBuffer();
-        buffer.write(
-            'Bitte teilen Sie uns mit, warum Sie uns dieses Log schicken.\nPlease tell us why you are sending the log file.\n\n');
-        DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
-        if (Platform.isIOS) {
-          IosDeviceInfo iosInfo = await deviceInfo.iosInfo;
-          buffer.write('systemVersion: ${iosInfo.systemVersion} \n');
-          buffer.write('model: ${iosInfo.model} \n');
-          buffer.write('name: ${iosInfo.name} \n');
-        } else {
-          AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
-          buffer.write('version.baseOS: ${androidInfo.version.baseOS} \n');
-          buffer.write('manufacturer: ${androidInfo.manufacturer} \n');
-          buffer.write('model: ${androidInfo.model} \n');
-        }
-
-        //sendZip
-        final Email email = Email(
-          body: buffer.toString(),
-          subject: 'Erzmobil User App Logs',
-          recipients: ['erzmobil@smartcity-zwoenitz.de'],
-          attachmentPaths: [zipFile.path],
-          isHTML: false,
-        );
-
-        try {
-          await FlutterEmailSender.send(email);
-        } catch (e) {
-          print(e);
-        }
-        //TODO: handle no Email client found?
-        zipFile.deleteSync();
-      }
-      logFile.deleteSync();
-    }
+    });
 
     _setDebugProcessing(false);
   }
@@ -248,7 +292,7 @@ class User extends ChangeNotifier with LocationListener {
       } on CognitoClientException catch (e) {
         Logger.error(e, StackTrace.current);
         final bool isConnected =
-            await InternetConnectionChecker().hasConnection;
+            await InternetConnectionChecker.instance.hasConnection;
         if (!isConnected) {
           Logger.info("ERROR_FAILED_NO_INTERNET");
           retVal = RequestState.ERROR_FAILED_NO_INTERNET;
@@ -293,7 +337,8 @@ class User extends ChangeNotifier with LocationListener {
       Logger.info("ERROR_FAILED_NO_INTERNET");
       Logger.error(e, StackTrace.current);
     } catch (e) {
-      final bool isConnected = await InternetConnectionChecker().hasConnection;
+      final bool isConnected =
+          await InternetConnectionChecker.instance.hasConnection;
       if (!isConnected) {
         retVal = RequestState.ERROR_FAILED_NO_INTERNET;
         Logger.info("ERROR_FAILED_NO_INTERNET");
@@ -315,7 +360,7 @@ class User extends ChangeNotifier with LocationListener {
       } on CognitoClientException catch (e) {
         Logger.error(e, StackTrace.current);
         final bool isConnected =
-            await InternetConnectionChecker().hasConnection;
+            await InternetConnectionChecker.instance.hasConnection;
         if (!isConnected) {
           retVal = RequestState.ERROR_FAILED_NO_INTERNET;
           Logger.info("ERROR_FAILED_NO_INTERNET");
@@ -739,42 +784,6 @@ class User extends ChangeNotifier with LocationListener {
     return retVal;
   }
 
-  Future<void> checkBackendConnection() async {
-    _setProcessing(true, ProgressState.CHECK_DIRECTUS_CONNECTION);
-    http.Response response;
-
-    try {
-      response = await http
-          .get(Uri.parse(Amazon.baseUrl + '/items/NewBackendAvailability'),
-              headers:
-                  new Map<String, String>.from({'Accept': 'application/json'}))
-          .timeout(Duration(seconds: User.TIMEOUT_DURATION));
-      Logger.info("RESPONSE: " + response.statusCode.toString());
-      if (response.statusCode == 200) {
-        final parsed = jsonDecode(response.body)["data"];
-        if (parsed['isActive'] != null) {
-          final bool isDirectusAvailable = parsed['isActive'] as bool;
-          useDirectus = isDirectusAvailable;
-        }
-      }
-    } on SocketException {
-      Logger.info("ERROR_FAILED_NO_INTERNET");
-    } on TimeoutException catch (e) {
-      Logger.info("Timeout for NewBackendAvailability");
-      _setProcessing(false, ProgressState.NONE);
-    } catch (e) {
-      Logger.error(e, StackTrace.current);
-    }
-
-    if (useDirectus) {
-      Logger.info("App is using the new directus backend.");
-    } else {
-      Logger.info("App is using old backend connection.");
-    }
-
-    _setProcessing(false, ProgressState.NONE);
-  }
-
   Future<void> loadCognitoData() async {
     _setProcessing(true, ProgressState.REQUEST_COGNITO_DATA);
 
@@ -1089,6 +1098,20 @@ class User extends ChangeNotifier with LocationListener {
         }
       }
     }
+    /*
+    leave comment for testing purposes
+    */
+
+    // if (tourList!.completedRoutes != null) {
+    //   for (Tour journey in tourList!.completedRoutes!) {
+    //     if (journey.nodes!.length > 2 &&
+    //         journey.status == 'Finished' &&
+    //         journey.routeId == 15183) {
+    //       saveActiveTour(journey.routeId!);
+    //       return journey;
+    //     }
+    //   }
+    // }
 
     return null;
   }
@@ -1198,13 +1221,13 @@ class User extends ChangeNotifier with LocationListener {
             ),
           ),
           actions: <Widget>[
-            FlatButton(
+            TextButton(
                 child: Text(
                   AppLocalizations.of(context)!.buttonConfirmFinish,
                   style: CustomTextStyles.bodyAzure,
                 ),
                 onPressed: () => Navigator.pop(context, true)),
-            FlatButton(
+            TextButton(
               child: Text(
                 AppLocalizations.of(context)!.cancel,
                 style: CustomTextStyles.bodyAzure,
@@ -1273,7 +1296,7 @@ class User extends ChangeNotifier with LocationListener {
             ),
           ),
           actions: <Widget>[
-            FlatButton(
+            TextButton(
               child: Text(
                 'OK',
                 style: CustomTextStyles.bodyAzure,

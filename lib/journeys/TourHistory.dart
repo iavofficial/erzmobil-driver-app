@@ -20,6 +20,7 @@ class TourHistory extends StatelessWidget {
         ),
         automaticallyImplyLeading: true,
         centerTitle: true,
+        foregroundColor: CustomColors.white,
         title: Text(AppLocalizations.of(context)!.tourHistory),
         leading: IconButton(
           onPressed: () {

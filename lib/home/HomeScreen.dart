@@ -13,6 +13,7 @@ import 'package:erzmobil_driver/account/AccountScreen.dart';
 import 'package:erzmobil_driver/information/InformationScreen.dart';
 import 'package:erzmobil_driver/journeys/MyTours.dart';
 import 'package:erzmobil_driver/model/User.dart';
+import 'package:erzmobil_driver/model/TabControllerModel.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -102,12 +103,20 @@ class HomeScreenState extends State<HomeScreen>
     ];
   }
 
-  void _computeIndex() {
-    if (User().isLoggedIn() && _isInitialLogin) {
-      _selectedIndex = 1;
-      _contentIndex = 1;
+  void _switchTab(int index) {
+    if (_isInitialLogin) {
+      TabControllerModel().computeInitialIndex();
+      _selectedIndex = TabControllerModel().currentIndex;
+      _contentIndex = TabControllerModel().currentIndex;
       _isInitialLogin = false;
+      return;
     }
+    if (_selectedIndex == index) {
+      return;
+    }
+    _selectedIndex = index;
+    _contentIndex = index;
+    TabControllerModel().setTabIndex(index);
   }
 
   void onItemTapped(int index) {
@@ -121,6 +130,7 @@ class HomeScreenState extends State<HomeScreen>
       } else if (index >= 1) {
         _contentIndex = index;
       }
+      TabControllerModel().setTabIndex(index);
     });
   }
 
@@ -130,74 +140,89 @@ class HomeScreenState extends State<HomeScreen>
         .initialisePushMessageHandling(context, onItemTapped);
     setupInteractedMessage(context);
     _buildTitleList(context);
-    return Consumer<User>(builder: (context, user, child) {
-      _computeIndex();
-      return Scaffold(
-        appBar: AppBar(
-          flexibleSpace: Container(
-            decoration: BoxDecoration(
-                gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: <Color>[CustomColors.mint, CustomColors.marine])),
-          ),
-          centerTitle: true,
-          title: Text(_pageTitles.elementAt(_contentIndex)),
-          actions: !User().isProgressUpdateTours && _contentIndex == 1
-              ? (<Widget>[
-                  IconButton(
-                    icon: Icon(
-                      Icons.history,
-                      color: CustomColors.backButtonIconColor,
-                    ),
-                    onPressed: () {
-                      Navigator.of(context).push(MaterialPageRoute(
-                          builder: (BuildContext context) =>
-                              new TourHistory()));
-                    },
-                  )
-                ])
-              : !User().isProgressUpdateTours &&
-                      _contentIndex == 2 &&
-                      User().getCurrentTour() != null &&
-                      User().getCurrentTour()!.nodes != null &&
-                      User().getCurrentTour()!.nodes!.length > 1
-                  ? (<Widget>[
-                      IconButton(
-                        icon: Icon(
-                          Icons.navigation,
-                          color: CustomColors.backButtonIconColor,
-                        ),
-                        onPressed: () {
-                          _shareRoute(User().getCurrentTour()!, context);
-                        },
-                      )
-                    ])
-                  : null,
-        ),
-        extendBodyBehindAppBar: false,
-        body: _pages.elementAt(_contentIndex),
-        bottomNavigationBar: BottomNavigationBar(
-          selectedLabelStyle: CustomTextStyles.navigationBlue,
-          backgroundColor: CustomColors.white,
+    return Consumer<User>(
+      builder: (context, user, child) {
+        return Consumer<TabControllerModel>(
+          builder: (context, tabController, child) {
+            _switchTab(tabController.currentIndex);
+            return Scaffold(
+              appBar: AppBar(
+                flexibleSpace: Container(
+                  decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: <Color>[
+                        CustomColors.mint,
+                        CustomColors.marine
+                      ])),
+                ),
+                centerTitle: true,
+                foregroundColor: CustomColors.white,
+                title: Text(_pageTitles.elementAt(_contentIndex)),
+                actions: !User().isProgressUpdateTours && _contentIndex == 1
+                    ? (<Widget>[
+                        IconButton(
+                          icon: Icon(
+                            Icons.history,
+                            color: CustomColors.backButtonIconColor,
+                          ),
+                          onPressed: () {
+                            Navigator.of(context).push(MaterialPageRoute(
+                                builder: (BuildContext context) =>
+                                    new TourHistory()));
+                          },
+                        )
+                      ])
+                    : !User().isProgressUpdateTours &&
+                            _contentIndex == 2 &&
+                            User().getCurrentTour() != null &&
+                            User().getCurrentTour()!.nodes != null &&
+                            User().getCurrentTour()!.nodes!.length > 1
+                        ? (<Widget>[
+                            IconButton(
+                              icon: Icon(
+                                Icons.navigation,
+                                color: CustomColors.backButtonIconColor,
+                              ),
+                              onPressed: () {
+                                _shareRoute(User().getCurrentTour()!, context);
+                              },
+                            )
+                          ])
+                        : null,
+              ),
+              extendBodyBehindAppBar: false,
+              body: _pages.elementAt(_contentIndex),
+              bottomNavigationBar: BottomNavigationBar(
+                selectedLabelStyle: CustomTextStyles.navigationBlue,
+                backgroundColor:
+                    CustomColors.themeStyleBlackForDarkOrWhite(context),
 
-          type: BottomNavigationBarType.fixed,
+                type: BottomNavigationBarType.fixed,
 
-          /// takes only font size
-          unselectedLabelStyle: CustomTextStyles.navigationGrey,
+                /// takes only font size
+                unselectedLabelStyle: CustomTextStyles
+                    .themeStyleNavigationWhiteForDarkOrNavigationGrey(context),
 
-          /// takes only font size
-          selectedIconTheme: CustomIconThemeData.navigationIconBlue,
-          unselectedIconTheme: CustomIconThemeData.navigationIconGrey,
-          selectedItemColor: CustomColors.mint,
-          unselectedItemColor: CustomColors.darkGrey,
-          currentIndex: _selectedIndex,
-          // this will be set when a new tab is tapped
-          onTap: User().isProcessing ? (int index) {} : onItemTapped,
-          items: _buildTabs(context),
-        ),
-      );
-    });
+                /// takes only font size
+                selectedIconTheme: CustomIconThemeData.navigationIconBlue,
+                unselectedIconTheme:
+                    CustomIconThemeData.themeIconStyleWhiteForDarkOrGrey(
+                        context),
+                selectedItemColor: CustomColors.mint,
+                unselectedItemColor:
+                    CustomColors.themeStyleWhiteForDarkOrDarkGrey(context),
+                currentIndex: _selectedIndex,
+                // this will be set when a new tab is tapped
+                onTap: User().isProcessing ? (int index) {} : onItemTapped,
+                items: _buildTabs(context),
+              ),
+            );
+          },
+        );
+      },
+    );
   }
 
   Future<void> _shareRoute(Tour currentRoute, BuildContext context) async {
@@ -248,27 +273,29 @@ class HomeScreenState extends State<HomeScreen>
       return <BottomNavigationBarItem>[
         BottomNavigationBarItem(
           icon: new Icon(Icons.account_circle),
-          title: new Text(AppLocalizations.of(context)!.authentication),
+          label: (AppLocalizations.of(context)!.authentication),
         ),
         BottomNavigationBarItem(
             icon: Icon(Icons.departure_board),
-            title: Text(AppLocalizations.of(context)!.myJourneys)),
+            label: (AppLocalizations.of(context)!.myJourneys)),
         BottomNavigationBarItem(
-            icon: Icon(Icons.directions),
-            title: Text(AppLocalizations.of(context)!.activeTour)),
+          icon: Icon(Icons.directions),
+          label: (AppLocalizations.of(context)!.activeTour),
+        ),
         BottomNavigationBarItem(
-            icon: Icon(Icons.info_outline),
-            title: Text(AppLocalizations.of(context)!.infoTitle)),
+          icon: Icon(Icons.info_outline),
+          label: (AppLocalizations.of(context)!.infoTitle),
+        ),
       ];
     } else {
       return <BottomNavigationBarItem>[
         BottomNavigationBarItem(
           icon: new Icon(Icons.account_circle),
-          title: new Text(AppLocalizations.of(context)!.authentication),
+          label: (AppLocalizations.of(context)!.authentication),
         ),
         BottomNavigationBarItem(
             icon: Icon(Icons.info_outline),
-            title: Text(AppLocalizations.of(context)!.infoTitle))
+            label: AppLocalizations.of(context)!.infoTitle)
       ];
     }
   }

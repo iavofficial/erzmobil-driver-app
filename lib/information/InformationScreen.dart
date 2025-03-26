@@ -7,13 +7,46 @@ import 'package:erzmobil_driver/model/User.dart';
 import 'package:provider/provider.dart';
 import 'package:erzmobil_driver/debug/Logger.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:erzmobil_driver/utils/ThemeManager.dart';
+import 'package:erzmobil_driver/utils/StoreManager.dart';
+import 'package:erzmobil_driver/ERZmobilDriverApp.dart';
 
-class InformationScreen extends StatelessWidget {
+class InformationScreen extends StatefulWidget {
+  @override
+  _InformationScreenState createState() => _InformationScreenState();
+}
+
+class _InformationScreenState extends State<InformationScreen> {
+  bool _status = false;
+  ThemeNotifier notifier = ThemeNotifier();
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeSwitch();
+  }
+
+  Future<void> _initializeSwitch() async {
+    bool status = await notifier.isDarkMode();
+    setState(() {
+      _status = status;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
+    // return _buildThemeButton();
     return SingleChildScrollView(
       child: Column(
         children: <Widget>[
+          /*Container(
+            margin: EdgeInsets.only(top: 25),
+            child: _buildRow(AppLocalizations.of(context)!.erzmobilStoryTitle,
+                _buildIcon(Icons.info), () {
+              Navigator.of(context).push(MaterialPageRoute(
+                  builder: (BuildContext context) => new HeatStory()));
+            }),
+          ),*/
           Padding(
             padding: EdgeInsets.only(top: 25),
           ),
@@ -36,30 +69,31 @@ class InformationScreen extends StatelessWidget {
             _launchDataprivacy();
           }),
           _buildDebug(context),
+          _buildThemeButton(),
         ],
       ),
     );
   }
 
   void _launchImprint() async {
-    if (await canLaunch(Strings.IMPRINT_URL)) {
-      await launch(Strings.IMPRINT_URL);
+    if (await canLaunchUrl(Uri.dataFromString(Strings.IMPRINT_URL))) {
+      await launchUrl(Uri.dataFromString(Strings.IMPRINT_URL));
     } else {
       Logger.info('Could not launch $Strings.IMPRINT_URL');
     }
   }
 
   void _launchAboutErzmobil() async {
-    if (await canLaunch(Strings.ABOUT_ERZMOBIL_URL)) {
-      await launch(Strings.ABOUT_ERZMOBIL_URL);
+    if (await canLaunchUrl(Uri.dataFromString(Strings.ABOUT_ERZMOBIL_URL))) {
+      await launchUrl(Uri.dataFromString(Strings.ABOUT_ERZMOBIL_URL));
     } else {
       Logger.info('Could not launch $Strings.ABOUT_ERZMOBIL_URL');
     }
   }
 
   void _launchDataprivacy() async {
-    if (await canLaunch(Strings.DATAPRIVACY_URL)) {
-      await launch(Strings.DATAPRIVACY_URL);
+    if (await canLaunchUrl(Uri.dataFromString(Strings.DATAPRIVACY_URL))) {
+      await launchUrl(Uri.dataFromString(Strings.DATAPRIVACY_URL));
     } else {
       Logger.info('Could not launch $Strings.DATAPRIVACY_URL');
     }
@@ -76,10 +110,57 @@ class InformationScreen extends StatelessWidget {
     });
   }
 
+  Widget _buildThemeButton() {
+    Widget darkModeSwitch = Switch(
+      value: _status,
+      activeColor: CustomColors.mint,
+      inactiveTrackColor: CustomColors.anthracite,
+      onChanged: (value) {
+        setState(() {
+          print('Switch value: ' + value.toString());
+          _status = value;
+        });
+
+        if (_status) {
+          notifier.setDarkMode();
+        } else {
+          notifier.setLightMode();
+        }
+      },
+    );
+
+    return InkWell(
+      child: Container(
+        margin: EdgeInsets.only(left: 15, right: 15),
+        child: Row(
+          children: <Widget>[
+            _buildIcon(Icons.contrast),
+            Flexible(
+              fit: FlexFit.loose,
+              child: Container(
+                margin: EdgeInsets.fromLTRB(15, 15, 15, 15),
+                child: Text(
+                  AppLocalizations.of(context)!.darkModeLabel,
+                  style:
+                      CustomTextStyles.themeStyleWhiteForDarkOrAzure(context),
+                  maxLines: 2,
+                  softWrap: true,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ),
+            darkModeSwitch
+          ],
+        ),
+      ),
+      onTap: null,
+    );
+  }
+
   Widget _buildIcon(IconData data) {
     return Icon(
       data,
-      color: CustomColors.marine,
+      color: CustomColors.themeStyleWhiteForDarkOrMarine(context),
       size: 30,
     );
   }
@@ -109,7 +190,8 @@ class InformationScreen extends StatelessWidget {
                 margin: EdgeInsets.fromLTRB(15, 15, 15, 15),
                 child: Text(
                   text,
-                  style: CustomTextStyles.bodyAzure,
+                  style:
+                      CustomTextStyles.themeStyleWhiteForDarkOrAzure(context),
                   maxLines: 2,
                   softWrap: true,
                   overflow: TextOverflow.ellipsis,
