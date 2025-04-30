@@ -17,6 +17,8 @@
     "loggedInAsLabel": "Sie sind eingeloggt als:",
     "dialogErrorTitle": "Fehler",
     "dialogInfoTitle": "Information",
+    "dialogPushOrderChangedTitle": "Tour wurde geändert",
+    "dialogPushOrderDeletedTitle": "Order wurde gelöscht",
     "dialogExpiredCodeErrorText": "Ihre E-Mail Adresse und/oder ihr Verifikationscode sind fehlerhaft. Bitte wiederholen Sie die Eingabe oder lassen sich erneut einen Verifikationscode schicken.",
     "dialogResetPwdSuccessText": "Sie haben Ihr Passwort erfolgreich geändert! Bitte melden Sie sich mit Ihrer E-Mail-Adresse und dem neuen Passwort an.",
     "dialogGenericErrorText": "Irgendwas ist schiefgelaufen, bitte versuchen Sie es später noch einmal.",
@@ -120,6 +122,23 @@
     "nextStop": "Nächster Halt: ", 
     "contactDetails": "Kontaktdaten der Mitfahrer",
     "loadPhoneNumbers": "Kontaktdaten werden geladen",
+    "notificationTitleDeletedOrder": "Order gelöscht",
+    "notificationMessageDeletedOrder": "Order in Tour {tour_id} gelöscht",
+    "@notificationMessageDeletedOrder": {
+    "description": "Push message parameters",
+    "placeholders": {
+        "tour_id": {}
+        }
+    },
+    "notificationTitleRouteChanged": "Touränderung",
+    "notificationMessageRouteChanged": "Order {order_id} in Tour {rout_id_new} hat sich geändert.",
+    "@notificationMessageRouteChanged": {
+    "description": "Push message parameters",
+    "placeholders": {
+        "order_id": {},
+        "route_id_new": {}
+        }
+    },
     "notificationTitleNewTour": "Tour gebucht", 
     "notificationMessageNewTour": "Eine Fahrt von {start} nach {stop} am {date} wurde gebucht.", 
     "@notificationMessageNewTour": {

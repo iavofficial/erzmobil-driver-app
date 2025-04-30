@@ -17,6 +17,8 @@
     "loggedInAsLabel": "Logged in as:",
     "dialogErrorTitle": "Error",
     "dialogInfoTitle": "Information",
+    "dialogPushOrderChangedTitle": "Tour was changed",
+    "dialogPushOrderDeletedTitle": "Order was deleted",
     "dialogExpiredCodeErrorText": "Sorry, your e-mail address and/or verification code is incorrect. Please repeat entering the data or start sending a new verification code.",
     "dialogResetPwdSuccessText": "You changed your password successfully. Please sign-in with your e-mail address and your new password.",
     "dialogGenericErrorText": "Something went wrong, please try again",
@@ -120,6 +122,25 @@
     "nextStop": "Next stop: ", 
     "contactDetails": "Passenger contact details",
     "loadPhoneNumbers": "Loading contact details",
+
+    "notificationTitleDeletedOrder": "Order deleted",
+    "notificationMessageDeletedOrder": "Order in Tour {tour_id} deleted",
+    "@notificationMessageDeletedOrder": {
+    "description": "Push message parameters",
+    "placeholders": {
+        "tour_id": {}
+        }
+    },
+    "notificationTitleRouteChanged": "Change in Tour",
+    "notificationMessageRouteChanged": "Order {order_id} in Tour {rout_id_new} has changed.",
+    "@notificationMessageRouteChanged": {
+    "description": "Push message parameters",
+    "placeholders": {
+        "order_id": {},
+        "route_id_new": {}
+        }
+    },
+
     "notificationTitleNewTour": "New tour booked", 
     "notificationMessageNewTour": "A new tour from {start} to {stop} on {date} was booked", 
     "@notificationMessageNewTour": {

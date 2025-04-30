@@ -1,3 +1,4 @@
+import 'dart:ffi';
 import 'dart:io';
 
 import 'package:erzmobil_driver/debug/Logger.dart';
@@ -8,8 +9,9 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:overlay_support/overlay_support.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
-
+import 'package:erzmobil_driver/model/Tours.dart';
 import '../Constants.dart';
+import 'package:audioplayers/audioplayers.dart';
 
 class PushNotificationService {
   static final PushNotificationService _instance =
@@ -118,12 +120,14 @@ class PushNotificationService {
     if (notification != null &&
         notification.titleLocKey != null &&
         notification.bodyLocKey != null) {
-      _logMessage(notification.titleLocKey!, notification.bodyLocKey!);
+      _logMessage(
+          notification.titleLocKey!, notification.bodyLocKey!, message.data);
     }
 
     if (User().isLoggedIn()) {
       String title = "";
       String messageText = "";
+      bool important = false;
 
       DateTime? date = message.data["date"] != null
           ? DateTime.parse(message.data["date"] as String)
@@ -163,40 +167,96 @@ class PushNotificationService {
             }
             break;
           case "9":
-            User().loadTours().then((value) => User().initActiveTourData());
+            int? routeId = int.parse(message.data["route_id"]);
+            bool showMessage = _isCurrentOrNextTour(routeId);
+
+            if (showMessage) {
+              playSound();
+              User().loadTours().then((value) => User().initActiveTourData());
+              important = true;
+              title = AppLocalizations.of(buildContext)!
+                  .notificationTitleDeletedOrder;
+              messageText = AppLocalizations.of(buildContext)!
+                  .notificationMessageDeletedOrder(message.data["route_id"]);
+            }
+            break;
+          case "10":
+            int? routeIdNew = int.parse(message.data["route_id_new"]);
+            int? routeIdOld = int.parse(message.data["route_id_old"]);
+
+            bool isRouteIdOld = _isCurrentOrNextTour(routeIdOld);
+            bool isRouteIdNew = _isCurrentOrNextTour(routeIdNew);
+
+            if (isRouteIdOld || isRouteIdNew) {
+              playSound();
+              User().loadTours().then((value) => User().initActiveTourData());
+              important = true;
+              title = AppLocalizations.of(buildContext)!
+                  .notificationTitleRouteChanged;
+              messageText = AppLocalizations.of(buildContext)!
+                  .notificationMessageRouteChanged(
+                      message.data["order_id"],
+                      message.data["route_id_new"],
+                      message.data["route_id_old"]);
+            }
             break;
           default:
         }
       }
 
       if (title.isNotEmpty && messageText.isNotEmpty) {
-        _logMessage(title, messageText);
-
-        showSimpleNotification(
-            Container(
-              padding: const EdgeInsets.symmetric(vertical: 10),
-              child: Text(
-                messageText,
-              ),
-            ), trailing: Builder(builder: (context) {
-          return Padding(
-            padding: const EdgeInsets.symmetric(vertical: 10),
-            child: IconButton(
-              icon: Icon(
-                Icons.close,
-                color: CustomColors.black,
-              ),
-              onPressed: () {
-                OverlaySupportEntry.of(context)!.dismiss();
-              },
-            ),
-          );
-        }),
-            background: CustomColors.green,
-            autoDismiss: false,
-            slideDismissDirection: DismissDirection.up);
+        _showNotification(title, messageText, important);
       }
     }
+  }
+
+  void playSound() async {
+    final player = AudioPlayer();
+    await player.play(AssetSource('notification.mp3'));
+  }
+
+  bool _isCurrentOrNextTour(int? routeId) {
+    if (routeId == null) {
+      return false;
+    }
+
+    Tour? currentTour = User().currentRoute;
+    bool isNextTourId = User().tourList!.isNextPlannedTour(routeId);
+    bool isCurrentTourId = false;
+    if (currentTour != null) {
+      isCurrentTourId = currentTour.routeId == routeId;
+    }
+
+    return isNextTourId || isCurrentTourId;
+  }
+
+  void _showNotification(String title, String messageText, bool important) {
+    // _logMessage(title, messageText, null);
+
+    showSimpleNotification(
+        Container(
+          padding: const EdgeInsets.symmetric(vertical: 10),
+          child: Text(
+            "$title:\n$messageText",
+          ),
+        ), trailing: Builder(builder: (context) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 10),
+        child: IconButton(
+          icon: Icon(
+            Icons.close,
+            color: important ? CustomColors.white : CustomColors.black,
+          ),
+          onPressed: () {
+            OverlaySupportEntry.of(context)!.dismiss();
+          },
+        ),
+      );
+    }),
+        background: important ? CustomColors.red : CustomColors.green,
+        foreground: important ? CustomColors.white : CustomColors.black,
+        autoDismiss: false,
+        slideDismissDirection: DismissDirection.up);
   }
 
   bool checkFullData(RemoteMessage message, DateTime? date) {
@@ -211,9 +271,14 @@ class PushNotificationService {
     return notification != null && message.data["start"] != null;
   }
 
-  void _logMessage(String title, String message) {
+  void _logMessage(String title, String message, Map<String, dynamic>? data) {
     try {
       Logger.releaseLog("FirebaseMessaging: $title - $message");
+      if (data != null) {
+        Logger.releaseLog("FirebaseMessaging data: $data");
+      } else {
+        Logger.releaseLog("FirebaseMessaging data: No data available");
+      }
     } catch (e) {}
   }
 }
