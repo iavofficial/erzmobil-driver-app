@@ -16,6 +16,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 import 'dart:ffi';
+import 'dart:ffi';
 import 'dart:io';
 
 import 'package:erzmobil_driver/debug/Logger.dart';
@@ -307,6 +308,55 @@ class PushNotificationService {
       );
     }),
         background: important ? CustomColors.customOrange : CustomColors.green,
+        foreground: important ? CustomColors.white : CustomColors.black,
+        autoDismiss: false,
+        slideDismissDirection: DismissDirection.up);
+  }
+
+  void playSound() async {
+    final player = AudioPlayer();
+    await player.play(AssetSource('notification.mp3'));
+  }
+
+  bool _isCurrentOrNextTour(int? routeId) {
+    if (routeId == null) {
+      return false;
+    }
+
+    Tour? currentTour = User().currentRoute;
+    bool isNextTourId = User().tourList!.isNextPlannedTour(routeId);
+    bool isCurrentTourId = false;
+    if (currentTour != null) {
+      isCurrentTourId = currentTour.routeId == routeId;
+    }
+
+    return isNextTourId || isCurrentTourId;
+  }
+
+  void _showNotification(String title, String messageText, bool important) {
+    // _logMessage(title, messageText, null);
+
+    showSimpleNotification(
+        Container(
+          padding: const EdgeInsets.symmetric(vertical: 10),
+          child: Text(
+            "$title:\n$messageText",
+          ),
+        ), trailing: Builder(builder: (context) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 10),
+        child: IconButton(
+          icon: Icon(
+            Icons.close,
+            color: important ? CustomColors.white : CustomColors.black,
+          ),
+          onPressed: () {
+            OverlaySupportEntry.of(context)!.dismiss();
+          },
+        ),
+      );
+    }),
+        background: important ? CustomColors.red : CustomColors.green,
         foreground: important ? CustomColors.white : CustomColors.black,
         autoDismiss: false,
         slideDismissDirection: DismissDirection.up);
