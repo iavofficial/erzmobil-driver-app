@@ -1,3 +1,20 @@
+/**
+ * Copyright © 2025 IAV GmbH Ingenieurgesellschaft Auto und Verkehr, All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
@@ -35,6 +52,7 @@ import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tuple/tuple.dart';
 import 'Bus.dart';
+import 'package:erzmobil_driver/utils/StoreManager.dart';
 
 class User extends ChangeNotifier with LocationListener {
   static final User _instance = new User._internal();
@@ -65,6 +83,7 @@ class User extends ChangeNotifier with LocationListener {
 
   List<Bus>? buses;
   List? busIds;
+  int? _selectedBusId;
 
   int? _finishedTourIndex;
   int? _activeTourId;
@@ -555,6 +574,13 @@ class User extends ChangeNotifier with LocationListener {
       map[DatabaseProvider.columnId] = id;
     }
 
+    if (_selectedBusId != null) {
+      int busId = _selectedBusId! >= 0 ? _selectedBusId! : -1;
+      map[DatabaseProvider.columnLastActiveBusId] = busId;
+    } else {
+      map[DatabaseProvider.columnLastActiveBusId] = -1;
+    }
+
     if (_activeTourId != null) {
       map[DatabaseProvider.columnActiveTourId] = _activeTourId;
     } else {
@@ -589,6 +615,7 @@ class User extends ChangeNotifier with LocationListener {
     User()._finishedTourIndex = tourIndex != -1 ? tourIndex : null;
     User().tmpAcceptedRegisterVersions =
         map[DatabaseProvider.columnRegisteredVersions];
+    User()._selectedBusId = map[DatabaseProvider.columnLastActiveBusId];
   }
 
   /// Restores cached session from store (refresh if session is not valid any more).
@@ -723,12 +750,19 @@ class User extends ChangeNotifier with LocationListener {
     if (!isLoggedIn()) {
       return null;
     }
+
     await loadDirectusToken();
 
     _setProcessing(true, ProgressState.UPDATE_STOPS);
     await loadStopList();
-
     await loadBuses();
+
+    if (User().hasValidBusId() == false) {
+      _setProcessing(false, ProgressState.NONE);
+      User().tourList = TourList(null);
+      return;
+    }
+
     await loadTours();
     initActiveTourData();
     _setProcessing(false, ProgressState.NONE);
@@ -914,23 +948,42 @@ class User extends ChangeNotifier with LocationListener {
     }
   }
 
+  int getSelectedBusId() {
+    if (_selectedBusId == null) {
+      setSelectedBusId(-1);
+    }
+
+    if (_selectedBusId! >= 0) {
+      return _selectedBusId!;
+    }
+
+    return -1;
+  }
+
+  bool hasValidBusId() {
+    return _selectedBusId != null && _selectedBusId! >= 0;
+  }
+
+  void setSelectedBusId(int busId) async {
+    _selectedBusId = busId;
+    await _databaseProvider.update(this);
+  }
+
   Future<RequestState> loadTours() async {
     if (!isLoggedIn()) {
       return RequestState.ERROR_NOT_LOGGED_IN;
     }
+
+    if (getSelectedBusId() == -1) {
+      return RequestState.ERROR_NO_BUS;
+    }
+
     RequestState retVal = RequestState.ERROR_FAILED;
 
     _setProcessing(true, ProgressState.UPDATE_TOURS);
     http.Response response;
 
-    if (busIds == null || busIds!.isEmpty) {
-      Future.delayed(Duration(seconds: 1), () async {
-        _setProcessing(false, ProgressState.NONE);
-      });
-      return retVal;
-    }
-
-    int busId = busIds![0];
+    int busId = await getSelectedBusId();
     await _refreshSessionIfNeeded();
 
     try {
@@ -1098,26 +1151,37 @@ class User extends ChangeNotifier with LocationListener {
         }
       }
     }
+
     /*
     leave comment for testing purposes
     */
-
+    // ********* Active Tour Debugging *********
+    // *** set a routeId of an existing, finished tour ***
+    //
     // if (tourList!.completedRoutes != null) {
     //   for (Tour journey in tourList!.completedRoutes!) {
     //     if (journey.nodes!.length > 2 &&
     //         journey.status == 'Finished' &&
-    //         journey.routeId == 15183) {
+    //         journey.routeId == 16364) {
     //       saveActiveTour(journey.routeId!);
     //       return journey;
     //     }
     //   }
     // }
+    //
+    // ******************************************
 
     return null;
   }
 
   Tour? getCurrentTour() {
     return currentRoute;
+  }
+
+  bool hasCurrentTour() {
+    return User().getCurrentTour() != null &&
+        User().getCurrentTour()!.nodes != null &&
+        User().getCurrentTour()!.nodes!.length > 1;
   }
 
   Future<void> saveActiveTour(int tourId) async {
@@ -1148,6 +1212,10 @@ class User extends ChangeNotifier with LocationListener {
   }
 
   bool hasOpenTours() {
+    if (tourList == null) {
+      return false;
+    }
+
     for (Tour tour in tourList!.getRequestedRoutes()) {
       if (tour.routeId == _activeTourId && tour.status == 'Started') {
         return true;

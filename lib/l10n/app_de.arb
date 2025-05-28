@@ -1,4 +1,13 @@
 {
+    "tourIsActiveTitle" : "Es ist eine Tour aktiv",
+    "tourIsActiveText" : "Während einer aktiven Tour kann das Fahrzeug nicht gewechselt werden",
+    "vehicle" : "Fahrzeug",
+    "selectAVehicle" : "Wählen sie ein Fahrzeug aus",
+    "noVehicleAvailable" : "Kein Fahrzeug verfügbar",
+    "noVehicleConnected" : "Kein Fahrzeug angemeldet",
+    "disconnectVehicleConfirmation" : "Möchten Sie das Fahrzeug abmelden?",
+    "disconnectBus" : "Abmelden: Bus ",
+    "vehicleSelection" : "Fahrzeug Auswahl",
     "infoTitle": "Information",
     "wheelchair": "Rollstuhl",
     "map": "Karte",
@@ -168,6 +177,14 @@
         "date": {}
         }
     },
+    "notificationTitleSystemMessage": "Systemnachricht",
+    "notificationMessageSystemMessage": "{systemInformation_de}",
+    "@notificationMessageSystemMessage": {
+    "description": "Push message parameters",
+    "placeholders": {
+        "systemInformation_de": {}
+        }
+    },
     "openTourAlert": "Eine oder mehrere Fahrten sind noch nicht abgeschlossen, möchten Sie wirklich eine neue Tour starten?",
     "lostInternetConnection": "Bitte prüfen Sie Ihre Internetverbindung.", 
     "dialogMessageNoInternet": "Irgendwas ist schiefgelaufen, bitte prüfen Sie Ihre Internetverbindung.", 
@@ -203,5 +220,7 @@
     "actualStop": "Aktueller Halt: ", 
     "noNumberAvailableError": "Die Aktion konnte nicht durchgeführt werden. Es ist keine Telefonnummer hinterlegt.", 
     "phoneNumberError": "Entschuldigung, leider ist irgendetwas schiefgelaufen.", 
-    "noRoutesError": "Irgendwas ist schief gelaufen, deine Fahrten konnten nicht geladen werden"
+    "noRoutesError": "Irgendwas ist schief gelaufen, deine Fahrten konnten nicht geladen werden",
+    "notificationTitleCurrentrouteChangedDriverWarning" : "Achtung: ",
+    "notificationMessageCurrentrouteChangedDriverWarning" : "Tour-Änderung!"
 }

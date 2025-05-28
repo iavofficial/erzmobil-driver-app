@@ -1,3 +1,20 @@
+/**
+ * Copyright © 2025 IAV GmbH Ingenieurgesellschaft Auto und Verkehr, All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
 import 'package:erzmobil_driver/debug/Logger.dart';
 import 'package:erzmobil_driver/model/PhoneNumberList.dart';
 import 'package:erzmobil_driver/location/LocationMangager.dart';
@@ -89,6 +106,10 @@ class _ActiveTourState extends State<ActiveTour> {
             Utils.getDistanceBetweenTwoPointsInKilometer(currLatLng, lastNode);
 
         if (distance <= 0.025) {
+          // ********* Active Tour Debugging *********
+          // ** Comment in to show a next stop
+          // if (true) {
+          // ******************************************
           return true;
         }
       }
@@ -100,6 +121,10 @@ class _ActiveTourState extends State<ActiveTour> {
     currentRoute = User().getCurrentTour();
     lastFinishedTourNode = User().getLastFinishedTourNode();
     activeNodeIdx = User().activeNodeIdx;
+    // ********* Active Tour Debugging *********
+    // ** Comment in and asign an existing index
+    // activeNodeIdx = 5;
+    // ******************************************
   }
 
   @override
@@ -114,6 +139,13 @@ class _ActiveTourState extends State<ActiveTour> {
 
   Widget _buildWidgets(BuildContext context) {
     bool highlightNextNode = shouldHighlightNextTourNode();
+    String activeTourEmptyText = User().hasValidBusId()
+        ? AppLocalizations.of(context)!.noActiveTour
+        : AppLocalizations.of(context)!.noVehicleConnected;
+
+    String journeysEmptyText = User().hasValidBusId()
+        ? AppLocalizations.of(context)!.noJourneys
+        : AppLocalizations.of(context)!.noVehicleConnected;
     _updateData();
 
     if (currentRoute == null) {
@@ -127,7 +159,7 @@ class _ActiveTourState extends State<ActiveTour> {
               Icons.no_transfer,
               color: CustomColors.themeStyleAntraciteForDarkOrWhite(context),
             ),
-            Text(AppLocalizations.of(context)!.noActiveTour),
+            Text(activeTourEmptyText),
           ],
         ),
       );
@@ -148,7 +180,7 @@ class _ActiveTourState extends State<ActiveTour> {
                             Icons.no_transfer,
                             color: CustomColors.anthracite,
                           ),
-                          Text(AppLocalizations.of(context)!.noJourneys),
+                          Text(journeysEmptyText),
                         ],
                       ),
                     ),
@@ -182,10 +214,13 @@ class _ActiveTourState extends State<ActiveTour> {
           }
 
           Widget treeView;
-          if (isActiveNode || (highlightNextNode && isNextNode)) {
+          if (isActiveNode) {
             GlobalKey? key = _targetKey;
             treeView = getHighlightedTourNodeWidget(
                 key, currentNode, routeId, isStart, isNextNode, isDestination);
+          } else if (highlightNextNode && isNextNode) {
+            treeView = getHighlightedTourNodeWidget(
+                null, currentNode, routeId, isStart, isNextNode, isDestination);
           } else {
             treeView = getNormalTourNodeWidget(isDisabled, currentNode, routeId,
                 isHistoryItem, isStart, isDestination);

@@ -1,3 +1,21 @@
+/**
+ * Copyright © 2025 IAV GmbH Ingenieurgesellschaft Auto und Verkehr, All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+import 'dart:ffi';
 import 'dart:ffi';
 import 'dart:io';
 
@@ -136,6 +154,10 @@ class PushNotificationService {
       if (message.data["id"] != null) {
         String id = message.data["id"];
 
+        if (User().hasValidBusId() == false && id != "4") {
+          return;
+        }
+
         switch (id) {
           case "1":
             title = AppLocalizations.of(buildContext)!.notificationTitleNewTour;
@@ -144,6 +166,17 @@ class PushNotificationService {
               messageText = AppLocalizations.of(buildContext)!
                   .notificationMessageNewTour(message.data["start"],
                       message.data["stop"], Utils().getDateAsString(date));
+            }
+            break;
+          case "4":
+            Locale currentLocale = Localizations.localeOf(context);
+            title = AppLocalizations.of(buildContext)!
+                .notificationTitleSystemMessage;
+
+            if (currentLocale.languageCode == "de") {
+              messageText = message.data["systemInformation_de"];
+            } else {
+              messageText = message.data["systemInformation_en"];
             }
             break;
           case "5":
@@ -200,6 +233,19 @@ class PushNotificationService {
                       message.data["route_id_old"]);
             }
             break;
+          case "11":
+            int? routeId = int.parse(message.data["route_id"]);
+            int? busId = int.parse(message.data["bus_id"]);
+
+            playSound();
+            User().loadTours().then((value) => User().initActiveTourData());
+            important = true;
+            title = AppLocalizations.of(buildContext)!
+                .notificationTitleCurrentrouteChangedDriverWarning;
+            messageText = AppLocalizations.of(buildContext)!
+                .notificationMessageCurrentrouteChangedDriverWarning;
+
+            break;
           default:
         }
       }
@@ -208,6 +254,63 @@ class PushNotificationService {
         _showNotification(title, messageText, important);
       }
     }
+  }
+
+  void playSound() async {
+    final player = AudioPlayer();
+    await player.play(AssetSource('notification.mp3'));
+  }
+
+  bool _isCurrentOrNextTour(int? routeId) {
+    if (routeId == null) {
+      return false;
+    }
+
+    Tour? currentTour = User().currentRoute;
+    bool isNextTourId = User().tourList!.isNextPlannedTour(routeId);
+    bool isCurrentTourId = false;
+    if (currentTour != null) {
+      isCurrentTourId = currentTour.routeId == routeId;
+    }
+
+    return isNextTourId || isCurrentTourId;
+  }
+
+  void _showNotification(String title, String messageText, bool important) {
+    _logMessage(title, messageText, null);
+    Widget text;
+
+    if (important) {
+      text = Text(
+        "$title\n $messageText",
+        style: CustomTextStyles.headlineBigWhiteBold,
+        textAlign: TextAlign.center,
+      );
+    } else {
+      text = Text("$title:\n$messageText");
+    }
+
+    showSimpleNotification(
+        Container(
+            padding: const EdgeInsets.symmetric(vertical: 10),
+            child: text), trailing: Builder(builder: (context) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 10),
+        child: IconButton(
+          icon: Icon(
+            Icons.close,
+            color: important ? CustomColors.white : CustomColors.black,
+          ),
+          onPressed: () {
+            OverlaySupportEntry.of(context)!.dismiss();
+          },
+        ),
+      );
+    }),
+        background: important ? CustomColors.customOrange : CustomColors.green,
+        foreground: important ? CustomColors.white : CustomColors.black,
+        autoDismiss: false,
+        slideDismissDirection: DismissDirection.up);
   }
 
   void playSound() async {
