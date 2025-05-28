@@ -1,4 +1,13 @@
 {
+    "tourIsActiveTitle" : "Es ist eine Tour aktiv",
+    "tourIsActiveText" : "Während einer aktiven Tour kann das Fahrzeug nicht gewechselt werden",
+    "vehicle" : "Fahrzeug",
+    "selectAVehicle" : "Wählen sie ein Fahrzeug aus",
+    "noVehicleAvailable" : "Kein Fahrzeug verfügbar",
+    "noVehicleConnected" : "Kein Fahrzeug angemeldet",
+    "disconnectVehicleConfirmation" : "Möchten Sie das Fahrzeug abmelden?",
+    "disconnectBus" : "Abmelden: Bus ",
+    "vehicleSelection" : "Fahrzeug Auswahl",
     "infoTitle": "Information",
     "wheelchair": "Rollstuhl",
     "map": "Karte",
@@ -17,6 +26,8 @@
     "loggedInAsLabel": "Sie sind eingeloggt als:",
     "dialogErrorTitle": "Fehler",
     "dialogInfoTitle": "Information",
+    "dialogPushOrderChangedTitle": "Tour wurde geändert",
+    "dialogPushOrderDeletedTitle": "Order wurde gelöscht",
     "dialogExpiredCodeErrorText": "Ihre E-Mail Adresse und/oder ihr Verifikationscode sind fehlerhaft. Bitte wiederholen Sie die Eingabe oder lassen sich erneut einen Verifikationscode schicken.",
     "dialogResetPwdSuccessText": "Sie haben Ihr Passwort erfolgreich geändert! Bitte melden Sie sich mit Ihrer E-Mail-Adresse und dem neuen Passwort an.",
     "dialogGenericErrorText": "Irgendwas ist schiefgelaufen, bitte versuchen Sie es später noch einmal.",
@@ -120,6 +131,23 @@
     "nextStop": "Nächster Halt: ", 
     "contactDetails": "Kontaktdaten der Mitfahrer",
     "loadPhoneNumbers": "Kontaktdaten werden geladen",
+    "notificationTitleDeletedOrder": "Order gelöscht",
+    "notificationMessageDeletedOrder": "Order in Tour {tour_id} gelöscht",
+    "@notificationMessageDeletedOrder": {
+    "description": "Push message parameters",
+    "placeholders": {
+        "tour_id": {}
+        }
+    },
+    "notificationTitleRouteChanged": "Touränderung",
+    "notificationMessageRouteChanged": "Order {order_id} in Tour {rout_id_new} hat sich geändert.",
+    "@notificationMessageRouteChanged": {
+    "description": "Push message parameters",
+    "placeholders": {
+        "order_id": {},
+        "route_id_new": {}
+        }
+    },
     "notificationTitleNewTour": "Tour gebucht", 
     "notificationMessageNewTour": "Eine Fahrt von {start} nach {stop} am {date} wurde gebucht.", 
     "@notificationMessageNewTour": {
@@ -147,6 +175,14 @@
         "start": {},
         "stop": {},
         "date": {}
+        }
+    },
+    "notificationTitleSystemMessage": "Systemnachricht",
+    "notificationMessageSystemMessage": "{systemInformation_de}",
+    "@notificationMessageSystemMessage": {
+    "description": "Push message parameters",
+    "placeholders": {
+        "systemInformation_de": {}
         }
     },
     "openTourAlert": "Eine oder mehrere Fahrten sind noch nicht abgeschlossen, möchten Sie wirklich eine neue Tour starten?",
@@ -184,5 +220,7 @@
     "actualStop": "Aktueller Halt: ", 
     "noNumberAvailableError": "Die Aktion konnte nicht durchgeführt werden. Es ist keine Telefonnummer hinterlegt.", 
     "phoneNumberError": "Entschuldigung, leider ist irgendetwas schiefgelaufen.", 
-    "noRoutesError": "Irgendwas ist schief gelaufen, deine Fahrten konnten nicht geladen werden"
+    "noRoutesError": "Irgendwas ist schief gelaufen, deine Fahrten konnten nicht geladen werden",
+    "notificationTitleCurrentrouteChangedDriverWarning" : "Achtung: ",
+    "notificationMessageCurrentrouteChangedDriverWarning" : "Tour-Änderung!"
 }

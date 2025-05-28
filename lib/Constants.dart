@@ -1,3 +1,20 @@
+/**
+ * Copyright © 2025 IAV GmbH Ingenieurgesellschaft Auto und Verkehr, All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
 import 'package:flutter/material.dart';
 
 class Expressions {
@@ -105,6 +122,13 @@ class CustomTextStyles {
     return bodyGrey;
   }
 
+  static TextStyle largeThemeStyleWhiteForDarkOrGrey(BuildContext context) {
+    if (Theme.of(context).brightness == Brightness.dark) {
+      return headlineBigWhiteBold;
+    }
+    return headlineBigBlackBold;
+  }
+
   static TextStyle themeStyleWhiteForDarkOrBlack(BuildContext context) {
     if (Theme.of(context).brightness == Brightness.dark) {
       return bodyWhite;
@@ -154,6 +178,8 @@ class CustomTextStyles {
       fontSize: 18.0, fontWeight: FontWeight.normal, color: CustomColors.white);
   static const TextStyle headlineWhiteBold = const TextStyle(
       fontSize: 18.0, fontWeight: FontWeight.bold, color: CustomColors.white);
+  static const TextStyle headlineRedBold = const TextStyle(
+      fontSize: 18.0, fontWeight: FontWeight.bold, color: CustomColors.red);
   static const TextStyle headlineBigWhiteBold = const TextStyle(
       fontSize: 20.0, fontWeight: FontWeight.bold, color: CustomColors.white);
   static const TextStyle bodyGrey = const TextStyle(
@@ -310,6 +336,54 @@ class CustomColors {
       700: const Color(0xFFFFFFFF),
       800: const Color(0xFFFFFFFF),
       900: const Color(0xFFFFFFFF),
+    },
+  );
+
+  static const MaterialColor red = const MaterialColor(
+    0xFFFF6F6F, // Base color for intense light red
+    const <int, Color>{
+      50: const Color(0xFFFFDADA),
+      100: const Color(0xFFFFB5B5),
+      200: const Color(0xFFFF8F8F),
+      300: const Color(0xFFFF6F6F),
+      400: const Color(0xFFFF5A5A),
+      500: const Color(0xFFFF4545),
+      600: const Color(0xFFFF3030),
+      700: const Color(0xFFFF1A1A),
+      800: const Color(0xFFFF0000), // Pure red for contrast
+      900: const Color(0xFFE60000), // Slightly darker red
+    },
+  );
+
+  static const MaterialColor customOrange = const MaterialColor(
+    0xFFFF7700, // Base color for intense orange
+    const <int, Color>{
+      50: const Color(0xFFFFE0CC), // Lightest shade
+      100: const Color(0xFFFFC199),
+      200: const Color(0xFFFFA366),
+      300: const Color(0xFFFF8533),
+      400: const Color(0xFFFF7700), // Base color
+      500: const Color(0xFFE66A00),
+      600: const Color(0xFFCC5C00),
+      700: const Color(0xFFB34F00),
+      800: const Color(0xFF994200), // Darker shade
+      900: const Color(0xFF803500), // Darkest shade
+    },
+  );
+
+  static const MaterialColor customBlue = const MaterialColor(
+    0xFF1E1E49, // Base color for deep blue
+    const <int, Color>{
+      50: const Color(0xFFE0E0F0), // Lightest shade
+      100: const Color(0xFFB3B3D9),
+      200: const Color(0xFF8080C2),
+      300: const Color(0xFF4D4DAB),
+      400: const Color(0xFF1E1E49), // Base color
+      500: const Color(0xFF1A1A42),
+      600: const Color(0xFF16163B),
+      700: const Color(0xFF121234),
+      800: const Color(0xFF0E0E2D), // Darker shade
+      900: const Color(0xFF0A0A26), // Darkest shade
     },
   );
 

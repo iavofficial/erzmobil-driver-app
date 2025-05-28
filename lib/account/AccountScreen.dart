@@ -1,8 +1,27 @@
+/**
+ * Copyright © 2025 IAV GmbH Ingenieurgesellschaft Auto und Verkehr, All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
 import 'package:erzmobil_driver/Constants.dart';
 import 'package:erzmobil_driver/account/LoginScreen.dart';
 import 'package:erzmobil_driver/account/RegisterScreen.dart';
 import 'package:erzmobil_driver/model/RequestState.dart';
+import 'package:erzmobil_driver/model/TourList.dart';
 import 'package:erzmobil_driver/model/User.dart';
+import 'package:erzmobil_driver/utils/StoreManager.dart';
 import 'package:flutter/gestures.dart';
 import 'package:provider/provider.dart';
 import 'package:erzmobil_driver/debug/Logger.dart';
@@ -79,6 +98,29 @@ class _AccountScreenState extends State<AccountScreen> {
                         },
                 ),
               ),
+              Container(
+                margin: EdgeInsets.fromLTRB(25.0, 0.0, 5.0, 15.0),
+              ),
+              Container(
+                margin: EdgeInsets.fromLTRB(25.0, 0.0, 25.0, 15.0),
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    padding: EdgeInsets.fromLTRB(0.0, 15.0, 0.0, 15.0),
+                    backgroundColor:
+                        CustomColors.themeStyleMintForDarkOrMarine(context),
+                    foregroundColor: CustomColors.lightGrey,
+                    shape: new RoundedRectangleBorder(
+                      borderRadius: new BorderRadius.circular(10.0),
+                    ),
+                  ),
+                  child: Text(
+                    AppLocalizations.of(context)!.vehicleSelection,
+                    style: CustomTextStyles.bodyWhite,
+                  ),
+                  onPressed: User().isProcessing ? null : _showBusSelectDialog,
+                ),
+              ),
+              _getDisconnectButton()
             ],
           ),
           Container(
@@ -200,6 +242,110 @@ class _AccountScreenState extends State<AccountScreen> {
         );
       },
     );
+  }
+
+  Widget _getDisconnectButton() {
+    if (User().hasValidBusId() == false) {
+      return Container();
+    }
+
+    return Container(
+      margin: EdgeInsets.fromLTRB(25.0, 0.0, 25.0, 15.0),
+      child: ElevatedButton(
+        style: ElevatedButton.styleFrom(
+          padding: EdgeInsets.fromLTRB(0.0, 15.0, 0.0, 15.0),
+          backgroundColor: CustomColors.themeStyleMintForDarkOrMarine(context),
+          foregroundColor: CustomColors.lightGrey,
+          shape: new RoundedRectangleBorder(
+            borderRadius: new BorderRadius.circular(10.0),
+          ),
+        ),
+        child: Text(
+          AppLocalizations.of(context)!.disconnectBus +
+              User().getSelectedBusId().toString(),
+          style: CustomTextStyles.bodyWhite,
+        ),
+        onPressed: User().isProcessing ? null : _showBusDisconnectDialog,
+      ),
+    );
+  }
+
+  Future<void> _showBusDisconnectDialog() async {
+    if (User().hasValidBusId()) {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return SimpleDialog(
+              title: Text(
+                  AppLocalizations.of(context)!.disconnectVehicleConfirmation),
+              children: [
+                SimpleDialogOption(
+                  onPressed: () {
+                    _setBusIdAndRefreshData(-1);
+                    Navigator.pop(context);
+                  },
+                  child: Text(
+                    AppLocalizations.of(context)!.disconnectBus +
+                        User().getSelectedBusId().toString(),
+                    style: CustomTextStyles.bodyRed,
+                  ),
+                )
+              ]);
+        },
+      );
+      return;
+    }
+  }
+
+  Future<void> _showBusSelectDialog() async {
+    if (User().hasOpenTours()) {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return SimpleDialog(
+            title: Text(AppLocalizations.of(context)!.tourIsActiveTitle),
+            contentPadding: EdgeInsets.all(25),
+            children: [Text(AppLocalizations.of(context)!.tourIsActiveText)],
+          );
+        },
+      );
+      return;
+    }
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return SimpleDialog(
+          title: _getBusIds().length > 0
+              ? Text(AppLocalizations.of(context)!.selectAVehicle)
+              : Text(AppLocalizations.of(context)!.noVehicleAvailable),
+          children: _getBusIds().map((busId) {
+            return SimpleDialogOption(
+              onPressed: () {
+                Navigator.pop(context, busId);
+              },
+              child: Text(AppLocalizations.of(context)!.vehicle + ' $busId'),
+            );
+          }).toList(),
+        );
+      },
+    ).then((selectedBus) {
+      if (selectedBus != null) {
+        _setBusIdAndRefreshData(selectedBus);
+      }
+    });
+  }
+
+  List<dynamic> _getBusIds() {
+    List<dynamic> ids = User().busIds!;
+    ids.remove(User().getSelectedBusId());
+
+    return ids;
+  }
+
+  Future<void> _setBusIdAndRefreshData(int selectedBus) async {
+    User().setSelectedBusId(selectedBus);
+    await User().loadPublicDataFromBE();
   }
 
   Future<void> _showDialog(

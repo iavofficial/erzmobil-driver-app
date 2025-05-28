@@ -1,3 +1,20 @@
+/**
+ * Copyright © 2025 IAV GmbH Ingenieurgesellschaft Auto und Verkehr, All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
 import 'package:erzmobil_driver/debug/Logger.dart';
 import 'package:erzmobil_driver/journeys/ActiveTour.dart';
 import 'package:erzmobil_driver/journeys/TourHistory.dart';
@@ -71,7 +88,7 @@ class HomeScreenState extends State<HomeScreen>
 
   @override
   void onLocationChanged(Position location) {
-    if (lifecycleState == AppLifecycleState.resumed) {
+    if (lifecycleState == AppLifecycleState.resumed && User().hasValidBusId()) {
       User().sendBusPosition(location);
     }
   }
@@ -160,37 +177,8 @@ class HomeScreenState extends State<HomeScreen>
                 centerTitle: true,
                 foregroundColor: CustomColors.white,
                 title: Text(_pageTitles.elementAt(_contentIndex)),
-                actions: !User().isProgressUpdateTours && _contentIndex == 1
-                    ? (<Widget>[
-                        IconButton(
-                          icon: Icon(
-                            Icons.history,
-                            color: CustomColors.backButtonIconColor,
-                          ),
-                          onPressed: () {
-                            Navigator.of(context).push(MaterialPageRoute(
-                                builder: (BuildContext context) =>
-                                    new TourHistory()));
-                          },
-                        )
-                      ])
-                    : !User().isProgressUpdateTours &&
-                            _contentIndex == 2 &&
-                            User().getCurrentTour() != null &&
-                            User().getCurrentTour()!.nodes != null &&
-                            User().getCurrentTour()!.nodes!.length > 1
-                        ? (<Widget>[
-                            IconButton(
-                              icon: Icon(
-                                Icons.navigation,
-                                color: CustomColors.backButtonIconColor,
-                              ),
-                              onPressed: () {
-                                _shareRoute(User().getCurrentTour()!, context);
-                              },
-                            )
-                          ])
-                        : null,
+                actions: _getActions(),
+                leading: _getBusIcon(),
               ),
               extendBodyBehindAppBar: false,
               body: _pages.elementAt(_contentIndex),
@@ -223,6 +211,77 @@ class HomeScreenState extends State<HomeScreen>
         );
       },
     );
+  }
+
+  Widget? _getBusIcon() {
+    if (User().isLoggedIn()) {
+      bool hasSelectedBus = User().hasValidBusId();
+
+      return InkWell(
+          onTap: () {
+            TabControllerModel().showAccountTab();
+          },
+          child: Container(
+              margin: EdgeInsets.fromLTRB(10.0, 0.0, 0.0, 0.0),
+              child: Row(children: <Widget>[
+                Container(),
+                InkWell(
+                  onTap: () {
+                    TabControllerModel().showAccountTab();
+                  },
+                  child: Icon(
+                      hasSelectedBus ? Icons.directions_bus : Icons.no_transfer,
+                      size: 22.0,
+                      color: hasSelectedBus ? Colors.white : CustomColors.red),
+                ),
+                hasSelectedBus
+                    ? Text(" " + User().getSelectedBusId().toString(),
+                        style: CustomTextStyles.headlineWhiteBold)
+                    : Text(
+                        "",
+                        style: CustomTextStyles.headlineRedBold,
+                      )
+              ])));
+    }
+
+    return null;
+  }
+
+  List<Widget>? _getActions() {
+    if (!User().isProgressUpdateTours &&
+        _contentIndex == 1 &&
+        User().hasValidBusId()) {
+      return (<Widget>[
+        IconButton(
+          icon: Icon(
+            Icons.history,
+            color: CustomColors.backButtonIconColor,
+          ),
+          onPressed: () {
+            Navigator.of(context).push(MaterialPageRoute(
+                builder: (BuildContext context) => new TourHistory()));
+          },
+        )
+      ]);
+    }
+
+    if (!User().isProgressUpdateTours &&
+        _contentIndex == 2 &&
+        User().hasCurrentTour()) {
+      return (<Widget>[
+        IconButton(
+          icon: Icon(
+            Icons.navigation,
+            color: CustomColors.backButtonIconColor,
+          ),
+          onPressed: () {
+            _shareRoute(User().getCurrentTour()!, context);
+          },
+        )
+      ]);
+    }
+
+    return null;
   }
 
   Future<void> _shareRoute(Tour currentRoute, BuildContext context) async {

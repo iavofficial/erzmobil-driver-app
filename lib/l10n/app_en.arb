@@ -1,4 +1,13 @@
 {
+    "tourIsActiveTitle" : "Tour is active",
+    "tourIsActiveText" : "A vehicle cannot be changed during an active tour",
+    "vehicle" : "Vehicle",
+    "selectAVehicle" : "Select vehicle",
+    "noVehicleAvailable" : "No vehicle available",
+    "noVehicleConnected" : "Kein Fahrzeug angemeldet",
+    "disconnectBus" : "Disconnect: bus ",
+    "disconnectVehicleConfirmation" : "Do you want to disconnect the vehicle?",
+    "vehicleSelection" : "Vehicle selection",
     "infoTitle": "Information",
     "wheelchair": "wheelchair",
     "map": "Map",
@@ -17,6 +26,8 @@
     "loggedInAsLabel": "Logged in as:",
     "dialogErrorTitle": "Error",
     "dialogInfoTitle": "Information",
+    "dialogPushOrderChangedTitle": "Tour was changed",
+    "dialogPushOrderDeletedTitle": "Order was deleted",
     "dialogExpiredCodeErrorText": "Sorry, your e-mail address and/or verification code is incorrect. Please repeat entering the data or start sending a new verification code.",
     "dialogResetPwdSuccessText": "You changed your password successfully. Please sign-in with your e-mail address and your new password.",
     "dialogGenericErrorText": "Something went wrong, please try again",
@@ -120,6 +131,25 @@
     "nextStop": "Next stop: ", 
     "contactDetails": "Passenger contact details",
     "loadPhoneNumbers": "Loading contact details",
+
+    "notificationTitleDeletedOrder": "Order deleted",
+    "notificationMessageDeletedOrder": "Order in Tour {tour_id} deleted",
+    "@notificationMessageDeletedOrder": {
+    "description": "Push message parameters",
+    "placeholders": {
+        "tour_id": {}
+        }
+    },
+    "notificationTitleRouteChanged": "Change in Tour",
+    "notificationMessageRouteChanged": "Order {order_id} in Tour {rout_id_new} has changed.",
+    "@notificationMessageRouteChanged": {
+    "description": "Push message parameters",
+    "placeholders": {
+        "order_id": {},
+        "route_id_new": {}
+        }
+    },
+
     "notificationTitleNewTour": "New tour booked", 
     "notificationMessageNewTour": "A new tour from {start} to {stop} on {date} was booked", 
     "@notificationMessageNewTour": {
@@ -147,6 +177,14 @@
         "start": {},
         "stop": {},
         "date": {}
+        }
+    },
+    "notificationTitleSystemMessage": "System message",
+    "notificationMessageSystemMessage": "{systemInformation_en}",
+    "@notificationMessageSystemMessage": {
+    "description": "Push message parameters",
+    "placeholders": {
+        "systemInformation_en": {}
         }
     },
     "openTourAlert": "One or more tours are still open. Do you really want to start a new tour?",
@@ -184,5 +222,7 @@
     "actualStop": "Actual stop: ",
     "noNumberAvailableError": "Sorry, something went wrong. No phone number available.", 
     "phoneNumberError": "Sorry, something went wrong.", 
-    "noRoutesError": "Sorry, something went wrong. No routes are available."
+    "noRoutesError": "Sorry, something went wrong. No routes are available.",
+    "notificationTitleCurrentrouteChangedDriverWarning" : "Attention: ",
+    "notificationMessageCurrentrouteChangedDriverWarning" : "Tour Changed!"
 }
